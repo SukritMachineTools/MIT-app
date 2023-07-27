@@ -1,0 +1,24 @@
+=QUERY(Data!$A$1:$H$136,"select C, B where B > date '"&TEXT(DATEVALUE("1/1/2000"),"yyyy-mm-dd")&"'",1)
+
+=TEXT(DATEVALUE("2/6/2023"),"yyyy-mm-dd")
+
+=QUERY(production!A:A, "select * where  A < date"&TEXT(DATEVALUE("2/6/2023"),"yyyy-mm-dd") )
+
+=QUERY(Data!$A$1:$H$136,"select C, B where B > date '"&TEXT(A1,"yyyy-mm-dd")&"' and B <= date '"&TEXT(B1,"yyyy-mm-dd")&"'",1)
+
+working:
+
+=QUERY(production!A:A,"select * where A > date '"&TEXT(DATEVALUE("1/1/2000"),"yyyy-mm-dd")&"'",1)
+
+=QUERY(production!A:A,"select * where A > date '"&TEXT(B1,"yyyy-mm-dd")&"' and A <= date '"&TEXT(D1,"yyyy-mm-dd")&"'",1)
+
+
+=QUERY(production!A:L,"select * where A > date '"&TEXT(B1,"yyyy-mm-dd")&"' and A <= date '"&TEXT(D1,"yyyy-mm-dd")&"'",1)
+
+=filter(production!A:L,production!D:D=G1,production!A:A)
+
+=QUERY(production!A:L,"SELECT D WHERE D = 'S.R. Shaft THD' ",1)
+
+=QUERY(production!A:L,"SELECT * WHERE D = 'S.R. Shaft THD' and ",1)
+
+=QUERY(production!A:L,"select * where D = 'S.R. Shaft THD' and A > date '"&TEXT(B1,"yyyy-mm-dd")&"' and A <= date '"&TEXT(D1,"yyyy-mm-dd")&"'",1)

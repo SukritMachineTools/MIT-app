@@ -1,0 +1,49 @@
+function doGet(e) {
+  return ManageSheet(e);
+}
+function doPost(e) {
+  return ManageSheet(e);
+}
+
+function ManageSheet(e) {
+
+  //READ ALL RECORDS
+  if ( e.parameter.func == "ReadAll") {
+    var ss = SpreadsheetApp.getActive();
+    var sh = ss.getSheets()[0]; 
+    var rg = sh.getDataRange().getValues(); 
+    var outString = '';
+      for(var row=0 ; row<rg.length ; ++row){
+        outString += rg[row].join(',') + '\n';  
+      } 
+    return ContentService.createTextOutput(outString).setMimeType(ContentService.MimeType.TEXT);
+  }
+    
+   //DELETE SINGLE RECORD
+   else if (e.parameter.func == "Delete") {
+    var record = e.parameter.id;
+    // console.log(record)
+    var ss = SpreadsheetApp.getActive();
+    var sh = ss.getSheets()[0];
+    sh.deleteRow(parseInt(record) + 1 );  
+    return ContentService.createTextOutput("Success");  
+ } 
+  //READ SINGLE RECORD
+   else if ( e.parameter.func == "ReadRecord") {
+    var ss = SpreadsheetApp.getActive();
+    var sh = ss.getSheets()[0];
+    var rg = sh.getDataRange().getValues();
+    var outString = '';
+    outString += rg[parseInt(e.parameter.id)].join(',');
+    return ContentService.createTextOutput(outString).setMimeType(ContentService.MimeType.TEXT);
+  } 
+  //UPDATE SINGLE RECORD
+   else if (e.parameter.func == "Update") { 
+    var ss = SpreadsheetApp.getActive();
+    var sh = ss.getSheets()[0];
+    var data = [ [ e.parameter.name, e.parameter.phone ] ]; 
+    sh.getRange("B"+(parseInt(e.parameter.id) + 1)+":C"+(parseInt(e.parameter.id) + 1)).setValues(data);
+    return ContentService.createTextOutput("Success");
+  }
+ 
+}

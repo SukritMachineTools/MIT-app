@@ -1,0 +1,13 @@
+less than date:
+
+=QUERY(production!A:A,"select * where A > date '"&TEXT(B1,"yyyy-mm-dd")&"'",1)
+
+between date:
+
+=QUERY(production!A:A,"select * where A > date '"&TEXT(B1,"yyyy-mm-dd")&"' and A <= date '"&TEXT(D1,"yyyy-mm-dd")&"'",1)
+
+search
+
+=QUERY(production!A:L,"select * where D = 'S.R. Shaft THD' and A > date '"&TEXT(B1,"yyyy-mm-dd")&"' and A <= date '"&TEXT(D1,"yyyy-mm-dd")&"'",1)
+
+=SUM(FILTER(E2:I2,E2:I2<>G2))
