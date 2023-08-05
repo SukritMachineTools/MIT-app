@@ -146,7 +146,7 @@ pinMode(optoPinrst, INPUT);
 
  
 
-  rtc.setTime(30, 49, 12, 12, 6, 2023);
+  rtc.setTime(0, 0, 23, 12, 6, 2023);
 
  
 
