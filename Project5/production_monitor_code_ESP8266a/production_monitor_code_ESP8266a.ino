@@ -310,7 +310,7 @@ button1State = digitalRead(button1Pin);
 
     lcd.setCursor(0, 1);
 
-    lcd.print("C.T.:" + String(cycleTime));
+    lcd.print("C.T.:" + String(cycleTime) + " ");
 
     lcd.setCursor(10, 1);
 
@@ -318,7 +318,7 @@ button1State = digitalRead(button1Pin);
 
     lcd.setCursor(10, 1);
 
-    lcd.print("PRT1:" + String(counter1));
+    lcd.print("PRT1:" + String(counter1) + " ");
 
 
 
