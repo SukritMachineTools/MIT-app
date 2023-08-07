@@ -61,6 +61,7 @@ void setup() {
     pinMode(optoPin2, INPUT_PULLUP);
     pinMode(optoPinrst, INPUT_PULLUP);
 
+    Wire.begin(); // Initialize the I2C bus
     lcd.begin(20, 4);
     lcd.init();
     lcd.backlight();
