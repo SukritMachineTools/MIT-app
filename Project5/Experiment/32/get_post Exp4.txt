@@ -80,7 +80,11 @@ unsigned long cycleStartTime = 0;  // To store the time when the button is press
 
 unsigned long cycleTime = 0;  // To store the calculated cycle time
 
-
+//my variables
+String currentRtcTime;
+unsigned long sec = 0;
+unsigned long min1 = 0;
+unsigned long hr = 0;
 
 ESP8266WebServer server(80);
 
@@ -105,7 +109,7 @@ const char* password = "";
 
 void handleRoot() {
   if (server.method() == HTTP_GET) {
-    String message = (String(p_on_time) + ", " + String(prod_time) + ", " + String(n_prod_time) + "," + String(cycleTime) + "," + String(counter1) + "," + String(rtc.getTime()) + "," + String(var1));
+    String message = (String(p_on_time) + ", " + String(prod_time) + ", " + String(n_prod_time) + "," + String(cycleTime) + "," + String(counter1) + "," + String(rtc.getTime()) + "," + String(var1) + "," + currentRtcTime);
 
 
 
@@ -114,10 +118,19 @@ void handleRoot() {
     String action = server.arg("action");  // Extract the action parameter from the POST data
 
     if (action == "resetCounter") {
-      counter1 = 0;
-      EEPROM.put(counter1Address, counter1);
-      EEPROM.commit();
-      server.send(200, "text/plain", "Counter reset to 0");
+      String second = server.arg("second");
+      String minute = server.arg("minute");
+      String hour = server.arg("hour");
+      sec = second.toInt();
+      min1 = minute.toInt();
+      hr = hour.toInt();
+      lcd.setCursor(10, 3);
+      rtc.setTime(sec, min1, (hr - 1), 12, 6, 2023);
+      lcd.print(currentRtcTime);  //showing time before reset
+      // counter1 = 0;
+      // EEPROM.put(counter1Address, counter1);
+      // EEPROM.commit();
+      server.send(200, "text/plain", "time reset successful");
     } else {
       server.send(400, "text/plain", "Invalid action");
     }
@@ -234,7 +247,7 @@ void loop()
 
   server.handleClient();
 
-  String message = (String(p_on_time) + ", " + String(prod_time) + ", " + String(n_prod_time) + "," + String(cycleTime) + "," + String(counter1) + "," + String(rtc.getTime()) + "," + String(var1));
+  String message = (String(p_on_time) + ", " + String(prod_time) + ", " + String(n_prod_time) + "," + String(cycleTime) + "," + String(counter1) + "," + String(rtc.getTime()) + "," + String(var1) + "," + currentRtcTime);
 
 
 
@@ -334,6 +347,8 @@ button1State = digitalRead(button1Pin);
   lcd.setCursor(0, 3);
 
   lcd.print(var1);
+
+  currentRtcTime = rtc.getTime();
 
 
 
