@@ -1,13 +1,10 @@
 #include <Wire.h>
-
-#include <ESP8266WiFi.h>
-
-#include <ESP8266WebServer.h>
-
+#include <WiFi.h>
+#include <AsyncTCP.h>
+#include <ESPAsyncWebSrv.h>
 #include <LiquidCrystal_I2C.h>
-
 #include <EEPROM.h>
-
+#include <RTClib.h>
 #include <ESP32Time.h>
 
 ESP32Time rtc(3600);  // offset in seconds GMT+1
@@ -24,17 +21,17 @@ int t_Start = 0;
 
 int t_stop = 0;
 
-int optoPin2 = 2;
+int optoPin2 = 32;
 
-int optoPinrst = 14;
+int optoPinrst = 25;
 
-//int button1Pin = 12; // Button 1 pin
+// int button1Pin = 18; // Button 1 pin
 
-int prod_ButtonPin = 13;  // Button 2 pin
+int prod_ButtonPin = 26;  // Button 2 pin
 
-//int resetButtonPin = 13; // Reset button pin
+// int resetButtonPin = 13; // Reset button pin
 
-//int ledPin = 2; // LED pin
+// int ledPin = 4; // LED pin
 
 
 
@@ -80,52 +77,44 @@ unsigned long cycleStartTime = 0;  // To store the time when the button is press
 
 unsigned long cycleTime = 0;  // To store the calculated cycle time
 
-//my variables
+//*by me
+unsigned long newVar2 = 0;
+// unsigned long var2 = 0;
+unsigned long lastVar2Update = 0;
+unsigned long var2UpdateInterval = 1000;
 
-
-ESP8266WebServer server(80);
-
+AsyncWebServer server(80);
 
 
 const char* ssid = "DeviceL1";
 
 const char* password = "";
 
-
-
-// void handleRoot()
-
-// {
+// void handleRoot() {
 
 //   //String message = "test theddd !";
-
-
 
 //   // server.send(200, "text/plain", message);
 // }
 
-void handleRoot() {
-  if (server.method() == HTTP_GET) {
-    String message = (String(p_on_time) + ", " + String(prod_time) + ", " + String(n_prod_time) + "," + String(cycleTime) + "," + String(counter1) + "," + String(rtc.getTime()) + "," + String(var1));
 
+//by me
 
+// void handleRoot(AsyncWebServerRequest* request) {
+//   String message = (String(p_on_time) + ", " + String(prod_time) + ", " + String(n_prod_time) + "," + String(cycleTime) + "," + String(counter1) + "," + String(var1));
+//   request->send(200, "text/plain", message);
+// }
 
-    server.send(200, "text/plain", message);
-  } else if (server.method() == HTTP_POST) {
-    String action = server.arg("action");  // Extract the action parameter from the POST data
-
-    if (action == "resetCounter") {
-      lcd.setCursor(10,3);
-      lcd.print("post");
-      counter1 = 0;
-      EEPROM.put(counter1Address, counter1);
-      EEPROM.commit();
-      server.send(200, "text/plain", "Counter reset to 0");
-    } else {
-      server.send(400, "text/plain", "Invalid action");
-    }
-  } else {
-    server.send(404, "text/plain", "Not found");
+void handleRoot(AsyncWebServerRequest* request) {
+  if (request->method() == HTTP_GET) {
+    String message = (String(p_on_time) + ", " + String(prod_time) + ", " + String(n_prod_time) + "," + String(cycleTime) + "," + String(counter1) + "," + String(var1));
+    request->send(200, "text/plain", message);
+  } else if (request->method() == HTTP_POST) {
+    String postBody = request->getParam("plain")->value();
+    newVar2 = postBody.toInt();
+    Serial.print("Received POST with value: ");
+    Serial.println(newVar2);
+    request->send(200, "text/plain", "Var2 updated");
   }
 }
 
@@ -154,11 +143,14 @@ void setup() {
 
   Serial.println(ip);
 
-
-
-  server.on("/", handleRoot);
-
+  server.on("/", HTTP_GET, handleRoot);
   server.begin();
+
+
+
+  // server.on("/", handleRoot);
+
+  // server.begin();
 
   Serial.println("Server started");
 
@@ -206,42 +198,23 @@ void setup() {
   //pinMode(ledPin, OUTPUT);
 }
 
-/*void handleRoot() { //byme
-  if (server.method() == HTTP_POST) {
-    String newHourStr = server.arg("hour");   // Extract the new hour from the POST data
-    String newMinStr = server.arg("minute");  // Extract the new minute from the POST data
-    String newSecStr = server.arg("second");  // Extract the new second from the POST data
-
-    int newHour = newHourStr.toInt();
-    int newMin = newMinStr.toInt();
-    int newSec = newSecStr.toInt();
-
-    if (newHour >= 0 && newHour <= 23 && newMin >= 0 && newMin <= 59 && newSec >= 0 && newSec <= 59) {
-      rtc.setTime(newSec, newMin, newHour, 12, 6, 2023);  // Update the time
-      server.send(200, "text/plain", "Time updated successfully");
-    } else {
-      server.send(400, "text/plain", "Invalid time data");
-    }
-  } else {
-    server.send(404, "text/plain", "Not found");
-  }
-}*/
-
-
-
 void loop()
 
 {
+  var2 = newVar2;
+  lcd.setCursor(10, 3);
+
+  lcd.print(var2);
 
 
 
-  server.handleClient();
+  // server.handleClient();
 
-  String message = (String(p_on_time) + ", " + String(prod_time) + ", " + String(n_prod_time) + "," + String(cycleTime) + "," + String(counter1) + "," + String(rtc.getTime()) + "," + String(var1));
+  // String message = (String(p_on_time) + ", " + String(prod_time) + ", " + String(n_prod_time) + "," + String(cycleTime) + "," + String(counter1) + "," + String(rtc.getTime()) + "," + String(var1));
 
 
 
-  server.send(200, "text/plain", message);
+  // server.send(200, "text/plain", message);
 
 
 

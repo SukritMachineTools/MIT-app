@@ -80,7 +80,6 @@ unsigned long cycleStartTime = 0;  // To store the time when the button is press
 
 unsigned long cycleTime = 0;  // To store the calculated cycle time
 
-//my variables
 
 
 ESP8266WebServer server(80);
@@ -115,8 +114,6 @@ void handleRoot() {
     String action = server.arg("action");  // Extract the action parameter from the POST data
 
     if (action == "resetCounter") {
-      lcd.setCursor(10,3);
-      lcd.print("post");
       counter1 = 0;
       EEPROM.put(counter1Address, counter1);
       EEPROM.commit();
