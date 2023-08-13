@@ -10,8 +10,9 @@
 
 #include <ESP32Time.h>
 
-ESP32Time rtc(3600);  // offset in seconds GMT+1
 
+ESP32Time rtc(3600);  // offset in seconds GMT+1
+// RTC_DS3231 rtc;
 
 
 LiquidCrystal_I2C lcd(0x27, 20, 4);  // Set the I2C address to 0x27 and dimensions to 20x4
@@ -69,7 +70,6 @@ unsigned long var1 = 0;
 unsigned long var2 = 0;
 
 
-
 int counter1Address = 0;  // Address in the EEPROM emulation to store the counter1 value
 
 int cycleTimeAddress = sizeof(counter1);  // Address in the EEPROM emulation to store the cycle time value
@@ -82,9 +82,15 @@ unsigned long cycleTime = 0;  // To store the calculated cycle time
 
 //my variables
 String currentRtcTime;
+int rtaddress = 10;
+const int maxStringLength = 50;
 unsigned long sec = 0;
 unsigned long min1 = 0;
 unsigned long hr = 0;
+int rtcHourAddress = sizeof(counter1) + sizeof(cycleTime);
+int rtcMinuteAddress = rtcHourAddress + sizeof(int);
+int rtcSecondAddress = rtcMinuteAddress + sizeof(int);
+
 
 ESP8266WebServer server(80);
 
@@ -140,6 +146,7 @@ void handleRoot() {
 }
 
 
+
 void setup() {
 
   pinMode(optoPin2, INPUT);
@@ -181,6 +188,14 @@ void setup() {
 
 
   rtc.setTime(0, 0, 23, 12, 6, 2023);
+  // String result = "";
+  // char character;
+  // int i = 0;
+
+  // while ((character = EEPROM.read(rtaddress + i)) != '\0') {
+  //   result += character;
+  //   i++;
+  // }
 
 
 
@@ -349,6 +364,14 @@ button1State = digitalRead(button1Pin);
   lcd.print(var1);
 
   currentRtcTime = rtc.getTime();
+  sec = rtc.getSecond();
+  min1 = rtc.getMinute();
+  hr = rtc.getHour();
+  EEPROM.put(rtcHourAddress, hr);
+  EEPROM.put(rtcMinuteAddress, min1);
+  EEPROM.put(rtcSecondAddress, sec);
+  EEPROM.commit();
+
 
 
 
