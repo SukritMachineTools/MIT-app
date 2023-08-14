@@ -96,7 +96,6 @@ int rtcSecondAddress = rtcMinuteAddress + sizeof(int);
 int storedHour, storedMinute, storedSecond;
 // int myvar, myvaraddress;
 String myvar2;
-int se12;
 
 AsyncWebServer server(80);
 
@@ -117,39 +116,34 @@ const char* password = "";
 
 
 
-// void handleRoot(AsyncWebServerRequest* request) {
-//   if (request->method() == HTTP_GET) {
-//     String message = (String(p_on_time) + ", " + String(prod_time) + ", " + String(n_prod_time) + "," + String(cycleTime) + "," + String(counter1) + "," + String(var1));
-//     request->send(200, "text/plain", message);
-//   } else if (request->method() == HTTP_POST) {
-//     request->send(200, "text/plain", "connection successful");
-//     String postBody = request->getParam("action")->value();
-//     lcd.setCursor(14, 0);
-
-//     lcd.print(postBody);
-//     if (postBody == "resetCounter") {
-//       String second = request->getParam("second")->value();
-//       String minute = request->getParam("minute")->value();
-//       String hour = request->getParam("hour")->value();
-//       sec = second.toInt();
-//       min1 = minute.toInt();
-//       hr = hour.toInt();
-//       lcd.setCursor(10, 3);
-//       rtc.setTime(sec, min1, (hr - 1), 12, 6, 2023);
-//       lcd.print(currentRtcTime);  //showing time before reset
-
-//       request->send(200, "text/plain", "time reset successful");
-//     } else {
-//       request->send(400, "text/plain", "Invalid action");
-//     }
-//   } else {
-//     request->send(404, "text/plain", "Not found");
-//   }
-// }
-
-void notFound(AsyncWebServerRequest* request) {
-  request->send(404, "text/plain", "Not found");
+void handleRoot(AsyncWebServerRequest* request) {
+  if (request->method() == HTTP_GET) {
+    String message = (String(p_on_time) + ", " + String(prod_time) + ", " + String(n_prod_time) + "," + String(cycleTime) + "," + String(counter1) + "," + String(var1));
+    request->send(200, "text/plain", message);
+  } else if (request->method() == HTTP_POST) {
+    String postBody = request->getParam("action")->value();
+    if (postBody == "resetCounter") {
+      String second = request->getParam("second")->value();
+      String minute = request->getParam("minute")->value();
+      String hour = request->getParam("hour")->value();
+      sec = second.toInt();
+      min1 = minute.toInt();
+      hr = hour.toInt();
+      lcd.setCursor(10, 3);
+      rtc.setTime(sec, min1, (hr - 1), 12, 6, 2023);
+      lcd.print(currentRtcTime);  //showing time before reset
+      // counter1 = 0;
+      // EEPROM.put(counter1Address, counter1);
+      // EEPROM.commit();
+      request->send(200, "text/plain", "time reset successful");
+    } else {
+      request->send(400, "text/plain", "Invalid action");
+    }
+  } else {
+    request->send(404, "text/plain", "Not found");
+  }
 }
+
 
 void setup() {
 
@@ -175,59 +169,7 @@ void setup() {
 
   Serial.println(ip);
 
-  // server.on("/", HTTP_GET, handleRoot);
-  server.on("/", HTTP_GET, [](AsyncWebServerRequest* request) {
-    String message = (String(p_on_time) + ", " + String(prod_time) + ", " + String(n_prod_time) + "," + String(cycleTime) + "," + String(counter1) + "," + String(se12));
-    request->send(200, "text/plain", message);
-  });
-
-
-  server.on("/post", HTTP_POST, [](AsyncWebServerRequest* request) {
-    // int paramsNr = request->params();  // number of params (e.g., 1)
-    // Serial.println(paramsNr);
-    // Serial.println();
-
-    // AsyncWebParameter* j = request->getParam(0);  // 1st parameter
-    // Serial.print("Size: ");
-    // Serial.print(j->value());  // value ^
-    // Serial.println();
-
-    // request->send(200, "text/plain", "connection successful");
-    // String postBody = request->getParam("action")->value();
-    AsyncWebParameter* j = request->getParam(0);
-    String postBody = j->value();
-
-    AsyncWebParameter* k = request->getParam(1);
-    se12 = (k->value()).toInt();
-
-    lcd.setCursor(10, 3);
-
-    lcd.print(se12);
-    // if (postBody == "resetCounter") {
-    //   String second = request->getParam("second")->value();
-    //   String minute = request->getParam("minute")->value();
-    //   String hour = request->getParam("hour")->value();
-    //   sec = second.toInt();
-    //   min1 = minute.toInt();
-    //   hr = hour.toInt();
-    //   lcd.setCursor(13, 0);
-    //   // rtc.setTime(sec, min1, (hr - 1), 12, 6, 2023);
-    //   lcd.print("P");  //showing time before reset
-
-    //   request->send(200, "text/plain", "time reset successful");
-    // } else {
-    //   request->send(400, "text/plain", "Invalid action");
-    // }
-
-
-    request->send(200);
-  });
-
-
-
-
-  server.onNotFound(notFound);
-
+  server.on("/", HTTP_GET, handleRoot);
   server.begin();
 
 
@@ -286,17 +228,17 @@ void setup() {
   storedMinute = int(EEPROM.read(rtcMinuteAddress));
   storedSecond = int(EEPROM.read(rtcSecondAddress));
   myvar2 = String(storedHour) + ":" + String(storedMinute) + ":" + String(storedSecond);
-  lcd.setCursor(2, 3);
+  lcd.setCursor(11, 3);
   lcd.print(myvar2);
 }
 
 void loop()
 
 {
-  // var2 = newVar2;
-  // lcd.setCursor(10, 3);
+  var2 = newVar2;
+  lcd.setCursor(10, 3);
 
-  // lcd.print(var2);
+  lcd.print(var2);
 
 
 
@@ -437,7 +379,7 @@ button1State = digitalRead(button1Pin);
 
     lcd.setCursor(0, 1);
 
-    lcd.print("C.T.:" + String(cycleTime) + "  ");
+    lcd.print("C.T.:" + String(cycleTime) + " ");
 
     lcd.setCursor(10, 1);
 
@@ -445,7 +387,7 @@ button1State = digitalRead(button1Pin);
 
     lcd.setCursor(10, 1);
 
-    lcd.print("PRT1:" + String(counter1) + "  ");
+    lcd.print("PRT1:" + String(counter1) + " ");
 
 
 

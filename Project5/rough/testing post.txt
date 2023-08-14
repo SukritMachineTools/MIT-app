@@ -96,7 +96,7 @@ int rtcSecondAddress = rtcMinuteAddress + sizeof(int);
 int storedHour, storedMinute, storedSecond;
 // int myvar, myvaraddress;
 String myvar2;
-int se12;
+String se12;
 
 AsyncWebServer server(80);
 
@@ -198,7 +198,7 @@ void setup() {
     String postBody = j->value();
 
     AsyncWebParameter* k = request->getParam(1);
-    se12 = (k->value()).toInt();
+    se12 = k->value();
 
     lcd.setCursor(10, 3);
 
