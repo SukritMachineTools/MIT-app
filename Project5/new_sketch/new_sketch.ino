@@ -83,6 +83,20 @@ unsigned long newVar2 = 0;
 unsigned long lastVar2Update = 0;
 unsigned long var2UpdateInterval = 1000;
 
+//my variables
+String currentRtcTime;
+int rtaddress = 10;
+const int maxStringLength = 50;
+unsigned long sec = 0;
+unsigned long min1 = 0;
+unsigned long hr = 0;
+int rtcHourAddress = +sizeof(int);
+int rtcMinuteAddress = rtcHourAddress + sizeof(int);
+int rtcSecondAddress = rtcMinuteAddress + sizeof(int);
+int storedHour, storedMinute, storedSecond;
+// int myvar, myvaraddress;
+String myvar2;
+
 AsyncWebServer server(80);
 
 
@@ -100,10 +114,7 @@ const char* password = "";
 
 //by me
 
-// void handleRoot(AsyncWebServerRequest* request) {
-//   String message = (String(p_on_time) + ", " + String(prod_time) + ", " + String(n_prod_time) + "," + String(cycleTime) + "," + String(counter1) + "," + String(var1));
-//   request->send(200, "text/plain", message);
-// }
+
 
 void handleRoot(AsyncWebServerRequest* request) {
   if (request->method() == HTTP_GET) {
@@ -166,7 +177,8 @@ void setup() {
 
 
 
-  EEPROM.begin(sizeof(counter1) + sizeof(cycleTime));  // Initialize EEPROM with the desired data size
+  // EEPROM.begin(sizeof(counter1) + sizeof(cycleTime));  // Initialize EEPROM with the desired data size
+  EEPROM.begin(512);
 
 
 
@@ -196,6 +208,13 @@ void setup() {
   pinMode(optoPinrst, INPUT_PULLUP);
 
   //pinMode(ledPin, OUTPUT);
+
+  storedHour = int(EEPROM.read(rtcHourAddress));
+  storedMinute = int(EEPROM.read(rtcMinuteAddress));
+  storedSecond = int(EEPROM.read(rtcSecondAddress));
+  myvar2 = String(storedHour) + ":" + String(storedMinute) + ":" + String(storedSecond);
+  lcd.setCursor(11, 3);
+  lcd.print(myvar2);
 }
 
 void loop()
@@ -310,6 +329,23 @@ button1State = digitalRead(button1Pin);
   lcd.setCursor(0, 3);
 
   lcd.print(var1);
+
+  currentRtcTime = rtc.getTime();
+  sec = rtc.getSecond();
+  min1 = rtc.getMinute();
+  hr = rtc.getHour();
+
+  // myvar = 75;
+  // myvaraddress = 10 + sizeof(int);
+  // storedHour += hr;
+  // storedMinute += min1;
+  // storedSecond += sec;
+
+  EEPROM.write(rtcHourAddress, hr);
+  EEPROM.write(rtcMinuteAddress, min1);
+  EEPROM.write(rtcSecondAddress, sec);
+
+  EEPROM.commit();
 
 
 

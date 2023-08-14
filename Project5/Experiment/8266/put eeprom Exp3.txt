@@ -87,11 +87,12 @@ const int maxStringLength = 50;
 unsigned long sec = 0;
 unsigned long min1 = 0;
 unsigned long hr = 0;
-int rtcHourAddress = sizeof(counter1) + sizeof(cycleTime);
+int rtcHourAddress = +sizeof(int);
 int rtcMinuteAddress = rtcHourAddress + sizeof(int);
 int rtcSecondAddress = rtcMinuteAddress + sizeof(int);
-
-
+int storedHour, storedMinute, storedSecond;
+// int myvar, myvaraddress;
+String myvar2;
 ESP8266WebServer server(80);
 
 
@@ -186,21 +187,14 @@ void setup() {
   lcd.backlight();
 
 
-
   rtc.setTime(0, 0, 23, 12, 6, 2023);
-  // String result = "";
-  // char character;
-  // int i = 0;
-
-  // while ((character = EEPROM.read(rtaddress + i)) != '\0') {
-  //   result += character;
-  //   i++;
-  // }
+  // rtc.setTime(storedSecond, storedMinute, storedHour - 1, 12, 6, 2023);
 
 
 
-  EEPROM.begin(sizeof(counter1) + sizeof(cycleTime));  // Initialize EEPROM with the desired data size
 
+  // EEPROM.begin(sizeof(counter1) + sizeof(cycleTime) + sizeof(myvaraddress));  // Initialize EEPROM with the desired data size
+  EEPROM.begin(512);
 
 
   // Read the counter and cycle time values from EEPROM during initialization
@@ -208,6 +202,8 @@ void setup() {
   EEPROM.get(counter1Address, counter1);
 
   EEPROM.get(cycleTimeAddress, cycleTime);
+
+
 
 
 
@@ -228,29 +224,18 @@ void setup() {
 
   pinMode(optoPinrst, INPUT_PULLUP);
 
+
   //pinMode(ledPin, OUTPUT);
+
+  storedHour = int(EEPROM.read(rtcHourAddress)) + hr;
+  storedMinute = int(EEPROM.read(rtcMinuteAddress)) + min1;
+  storedSecond = int(EEPROM.read(rtcSecondAddress)) + sec;
+  myvar2 = String(storedHour) + ":" + String(storedMinute) + ":" + String(storedSecond);
+  lcd.setCursor(11, 3);
+  lcd.print(myvar2);
 }
 
-/*void handleRoot() { //byme
-  if (server.method() == HTTP_POST) {
-    String newHourStr = server.arg("hour");   // Extract the new hour from the POST data
-    String newMinStr = server.arg("minute");  // Extract the new minute from the POST data
-    String newSecStr = server.arg("second");  // Extract the new second from the POST data
 
-    int newHour = newHourStr.toInt();
-    int newMin = newMinStr.toInt();
-    int newSec = newSecStr.toInt();
-
-    if (newHour >= 0 && newHour <= 23 && newMin >= 0 && newMin <= 59 && newSec >= 0 && newSec <= 59) {
-      rtc.setTime(newSec, newMin, newHour, 12, 6, 2023);  // Update the time
-      server.send(200, "text/plain", "Time updated successfully");
-    } else {
-      server.send(400, "text/plain", "Invalid time data");
-    }
-  } else {
-    server.send(404, "text/plain", "Not found");
-  }
-}*/
 
 
 
@@ -367,10 +352,18 @@ button1State = digitalRead(button1Pin);
   sec = rtc.getSecond();
   min1 = rtc.getMinute();
   hr = rtc.getHour();
-  EEPROM.put(rtcHourAddress, hr);
-  EEPROM.put(rtcMinuteAddress, min1);
-  EEPROM.put(rtcSecondAddress, sec);
+
+  // myvar = 75;
+  // myvaraddress = 10 + sizeof(int);
+
+  EEPROM.write(rtcHourAddress, hr);
+  EEPROM.write(rtcMinuteAddress, min1);
+  EEPROM.write(rtcSecondAddress, sec);
+
   EEPROM.commit();
+
+
+
 
 
 

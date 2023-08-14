@@ -227,9 +227,9 @@ void setup() {
 
   //pinMode(ledPin, OUTPUT);
 
-  storedHour = int(EEPROM.read(rtcHourAddress)) + hr;
-  storedMinute = int(EEPROM.read(rtcMinuteAddress)) + min1;
-  storedSecond = int(EEPROM.read(rtcSecondAddress)) + sec;
+  storedHour = int(EEPROM.read(rtcHourAddress)) ;
+  storedMinute = int(EEPROM.read(rtcMinuteAddress)) ;
+  storedSecond = int(EEPROM.read(rtcSecondAddress)) ;
   myvar2 = String(storedHour) + ":" + String(storedMinute) + ":" + String(storedSecond);
   lcd.setCursor(11, 3);
   lcd.print(myvar2);
