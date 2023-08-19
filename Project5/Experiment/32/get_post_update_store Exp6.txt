@@ -105,7 +105,47 @@ const char* ssid = "DeviceL1";
 
 const char* password = "";
 
+// void handleRoot() {
 
+//   //String message = "test theddd !";
+
+//   // server.send(200, "text/plain", message);
+// }
+
+
+//by me
+
+
+
+// void handleRoot(AsyncWebServerRequest* request) {
+//   if (request->method() == HTTP_GET) {
+//     String message = (String(p_on_time) + ", " + String(prod_time) + ", " + String(n_prod_time) + "," + String(cycleTime) + "," + String(counter1) + "," + String(var1));
+//     request->send(200, "text/plain", message);
+//   } else if (request->method() == HTTP_POST) {
+//     request->send(200, "text/plain", "connection successful");
+//     String postBody = request->getParam("action")->value();
+//     lcd.setCursor(14, 0);
+
+//     lcd.print(postBody);
+//     if (postBody == "resetCounter") {
+//       String second = request->getParam("second")->value();
+//       String minute = request->getParam("minute")->value();
+//       String hour = request->getParam("hour")->value();
+//       sec = second.toInt();
+//       min1 = minute.toInt();
+//       hr = hour.toInt();
+//       lcd.setCursor(10, 3);
+//       rtc.setTime(sec, min1, (hr - 1), 12, 6, 2023);
+//       lcd.print(currentRtcTime);  //showing time before reset
+
+//       request->send(200, "text/plain", "time reset successful");
+//     } else {
+//       request->send(400, "text/plain", "Invalid action");
+//     }
+//   } else {
+//     request->send(404, "text/plain", "Not found");
+//   }
+// }
 
 void notFound(AsyncWebServerRequest* request) {
   request->send(404, "text/plain", "Not found");
@@ -119,6 +159,12 @@ void setup() {
 
 
 
+  //String message = " 1234567";
+
+  //server.send(200, "text/plain", message);
+
+
+
   WiFi.mode(WIFI_AP);
 
   WiFi.softAP(ssid, password);
@@ -129,6 +175,7 @@ void setup() {
 
   Serial.println(ip);
 
+  // server.on("/", HTTP_GET, handleRoot);
   server.on("/", HTTP_GET, [](AsyncWebServerRequest* request) {
     String message = (String(p_on_time) + ", " + String(prod_time) + ", " + String(n_prod_time) + "," + String(cycleTime) + "," + String(counter1) + "," + String(rtc.getHour()) + ":" + String(rtc.getMinute()) + ":" + String(rtc.getSecond()));
     request->send(200, "text/plain", message);
@@ -153,7 +200,21 @@ void setup() {
     } else {
       request->send(400, "text/plain", "invalid action");
     }
+    // if (postBody == "resetCounter") {
+    //   String second = request->getParam("second")->value();
+    //   String minute = request->getParam("minute")->value();
+    //   String hour = request->getParam("hour")->value();
+    //   sec = second.toInt();
+    //   min1 = minute.toInt();
+    //   hr = hour.toInt();
+    //   lcd.setCursor(13, 0);
+    //   // rtc.setTime(sec, min1, (hr - 1), 12, 6, 2023);
+    //   lcd.print("P");  //showing time before reset
 
+    //   request->send(200, "text/plain", "time reset successful");
+    // } else {
+    //   request->send(400, "text/plain", "Invalid action");
+    // }
 
 
     request->send(200);
@@ -229,6 +290,21 @@ void setup() {
 void loop()
 
 {
+  // var2 = newVar2;
+  // lcd.setCursor(10, 3);
+
+  // lcd.print(var2);
+
+
+
+  // server.handleClient();
+
+  // String message = (String(p_on_time) + ", " + String(prod_time) + ", " + String(n_prod_time) + "," + String(cycleTime) + "," + String(counter1) + "," + String(rtc.getTime()) + "," + String(var1));
+
+
+
+  // server.send(200, "text/plain", message);
+
 
 
   /*
@@ -258,6 +334,10 @@ button1State = digitalRead(button1Pin);
     {
 
       cycleStartTime = millis();
+
+      //     lcd.setCursor(0, 2);
+
+      // lcd.print(rtc.getTime());
     }
 
     //if (button1State == HIGH)
@@ -277,6 +357,9 @@ button1State = digitalRead(button1Pin);
 
       counter1 = counter1 + 1;
 
+      //     lcd.setCursor(0, 3);
+
+      //     lcd.print(rtc.getTime());
 
       lcd.setCursor(0, 1);
 
