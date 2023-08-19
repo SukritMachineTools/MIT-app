@@ -311,7 +311,7 @@ button1State = digitalRead(button1Pin);
       // } else {
 
       //   p_on_time = millis() / 60000;
-      }
+      //}
 
       cycleTime = millis() - cycleStartTime;  // Calculate the cycle time
 

@@ -119,7 +119,7 @@ const char* password = "";
 void notFound(AsyncWebServerRequest* request) {
   request->send(404, "text/plain", "Not found");
 }
-///////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////
 void setup() {
 
   pinMode(optoPin2, INPUT);
@@ -139,7 +139,7 @@ void setup() {
   Serial.println(ip);
 
   server.on("/", HTTP_GET, [](AsyncWebServerRequest* request) {
-    String message = (String(p_on_time) + ", " + String(prod_time) + ", " + String(n_prod_time) + "," + String(cycleTime) + "," + String(counter1) + "," + String(rtc.getHour()) + ":" + String(rtc.getMinute()) + ":" + String(rtc.getSecond()));
+    String message = (String(p_on_time) + ", " + String(prod_time) + ", " + String(n_prod_time) + "," + String(cycleTime) + "," + String(counter1) + "," + String(var1) + "," + String(rtc.getHour()) + ":" + String(rtc.getMinute()) + ":" + String(rtc.getSecond()));
     request->send(200, "text/plain", message);
   });
 
@@ -227,11 +227,11 @@ void setup() {
 
   //pinMode(ledPin, OUTPUT);
 
-  storedHour = int(EEPROM.read(rtcHourAddress)) - 1;
+  storedHour = int(EEPROM.read(rtcHourAddress));
   storedMinute = int(EEPROM.read(rtcMinuteAddress));
   storedSecond = int(EEPROM.read(rtcSecondAddress));
-  rtc.setTime(storedSecond, storedMinute, storedHour, 12, 6, 2023);
-  myvar2 = String(storedHour + 1) + ":" + String(storedMinute) + ":" + String(storedSecond);
+  // rtc.setTime(storedSecond, storedMinute, storedHour - 1, 12, 6, 2023);
+  myvar2 = String(storedHour) + ":" + String(storedMinute) + ":" + String(storedSecond);
   lcd.setCursor(2, 3);
   lcd.print(myvar2);
 
@@ -261,7 +261,7 @@ void setup() {
     cycleTime = cycleTimeval - 2;
   }
 }
-
+//////////////////////////////////////////////////////////////////////////////////////////////
 void loop()
 
 {
@@ -305,13 +305,24 @@ button1State = digitalRead(button1Pin);
 
       lcd.print("PRT1:" + String(counter1));
 
+      // if (milliFlag == 1) {
+
+      //   milliFlg = 0;
+      // } else {
+
+      //   p_on_time = millis() / 60000;
+      // }
+
       cycleTime = millis() - cycleStartTime;  // Calculate the cycle time
 
-      cycleTime = cycleTime / 1000;
+      cycleTime = (cycleTime / 1000);
+      cycleTimeval = cycleTime;
 
       var1 = cycleTime + var1;
+      var1val = var1;
 
       counter1 = counter1 + 1;
+      counter1val = counter1;
 
 
       lcd.setCursor(0, 1);
@@ -329,7 +340,13 @@ button1State = digitalRead(button1Pin);
 
   p_on_time = millis() / 60000;
 
-  prod_time = var1 / 60;
+  if (var1 == 0) {
+    prod_time = 0;
+  } else {
+    prod_time = var1 / 60;
+  }
+
+
 
   n_prod_time = p_on_time - prod_time;
 
@@ -387,6 +404,7 @@ button1State = digitalRead(button1Pin);
     counter1 = 0;
 
     cycleTime = 0;
+
     /*my*/
     counter1val = 0;
     cycleTime = 0;
@@ -410,7 +428,7 @@ button1State = digitalRead(button1Pin);
     lcd.setCursor(10, 1);
 
     lcd.print("PRT1:" + String(counter1) + "  ");
-    rtc.setTime(0, 0, 23, 12, 6, 2023);
+    // rtc.setTime(0, 0, 23, 12, 6, 2023);
 
 
     // Store the reset counter values in EEPROM
