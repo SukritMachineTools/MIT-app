@@ -218,10 +218,11 @@ void setup() {
 
   //pinMode(ledPin, OUTPUT);
 
-  storedHour = int(EEPROM.read(rtcHourAddress));
+  storedHour = int(EEPROM.read(rtcHourAddress)) - 1;
   storedMinute = int(EEPROM.read(rtcMinuteAddress));
   storedSecond = int(EEPROM.read(rtcSecondAddress));
-  myvar2 = String(storedHour) + ":" + String(storedMinute) + ":" + String(storedSecond);
+  rtc.setTime(storedSecond, storedMinute, storedHour, 12, 6, 2023);
+  myvar2 = String(storedHour+1) + ":" + String(storedMinute) + ":" + String(storedSecond);
   lcd.setCursor(2, 3);
   lcd.print(myvar2);
 }
@@ -360,7 +361,7 @@ button1State = digitalRead(button1Pin);
     lcd.setCursor(10, 1);
 
     lcd.print("PRT1:" + String(counter1) + "  ");
-
+    rtc.setTime(0, 0, 23, 12, 6, 2023);
 
 
     // Store the reset counter values in EEPROM
