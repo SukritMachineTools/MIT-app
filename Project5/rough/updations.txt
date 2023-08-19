@@ -94,9 +94,18 @@ int rtcHourAddress = +sizeof(int);
 int rtcMinuteAddress = rtcHourAddress + sizeof(int);
 int rtcSecondAddress = rtcMinuteAddress + sizeof(int);
 int storedHour, storedMinute, storedSecond;
-// int myvar, myvaraddress;
+int Ttimead = rtcSecondAddress + sizeof(int);
+int Ctimeadd = Ttimead + sizeof(int);
+int Prt1add = Ctimeadd + sizeof(int);
+int PTadd = Prt1add + sizeof(int);
+int NPTadd = PTadd + sizeof(int);
+int var1add = NPTadd + sizeof(int);
+int counter1add = var1add + sizeof(int);
+unsigned long p_on_timeval, prod_timeval, n_prod_timeval, cycleTimeval, var1val, counter1val;
+int milliFlag = 0;
+unsigned long resetcycleStartTime = 0;
 String myvar2;
-String se12;
+int getsec, getmin, gethr;
 
 AsyncWebServer server(80);
 
@@ -105,63 +114,17 @@ const char* ssid = "DeviceL1";
 
 const char* password = "";
 
-// void handleRoot() {
 
-//   //String message = "test theddd !";
-
-//   // server.send(200, "text/plain", message);
-// }
-
-
-//by me
-
-
-
-// void handleRoot(AsyncWebServerRequest* request) {
-//   if (request->method() == HTTP_GET) {
-//     String message = (String(p_on_time) + ", " + String(prod_time) + ", " + String(n_prod_time) + "," + String(cycleTime) + "," + String(counter1) + "," + String(var1));
-//     request->send(200, "text/plain", message);
-//   } else if (request->method() == HTTP_POST) {
-//     request->send(200, "text/plain", "connection successful");
-//     String postBody = request->getParam("action")->value();
-//     lcd.setCursor(14, 0);
-
-//     lcd.print(postBody);
-//     if (postBody == "resetCounter") {
-//       String second = request->getParam("second")->value();
-//       String minute = request->getParam("minute")->value();
-//       String hour = request->getParam("hour")->value();
-//       sec = second.toInt();
-//       min1 = minute.toInt();
-//       hr = hour.toInt();
-//       lcd.setCursor(10, 3);
-//       rtc.setTime(sec, min1, (hr - 1), 12, 6, 2023);
-//       lcd.print(currentRtcTime);  //showing time before reset
-
-//       request->send(200, "text/plain", "time reset successful");
-//     } else {
-//       request->send(400, "text/plain", "Invalid action");
-//     }
-//   } else {
-//     request->send(404, "text/plain", "Not found");
-//   }
-// }
 
 void notFound(AsyncWebServerRequest* request) {
   request->send(404, "text/plain", "Not found");
 }
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////
 void setup() {
 
   pinMode(optoPin2, INPUT);
 
   pinMode(optoPinrst, INPUT);
-
-
-
-  //String message = " 1234567";
-
-  //server.send(200, "text/plain", message);
 
 
 
@@ -175,49 +138,31 @@ void setup() {
 
   Serial.println(ip);
 
-  // server.on("/", HTTP_GET, handleRoot);
   server.on("/", HTTP_GET, [](AsyncWebServerRequest* request) {
-    String message = (String(p_on_time) + ", " + String(prod_time) + ", " + String(n_prod_time) + "," + String(cycleTime) + "," + String(counter1) + "," + String(se12));
+    String message = (String(p_on_time) + ", " + String(prod_time) + ", " + String(n_prod_time) + "," + String(cycleTime) + "," + String(counter1) + "," + String(var1) + "," + String(rtc.getHour()) + ":" + String(rtc.getMinute()) + ":" + String(rtc.getSecond()));
     request->send(200, "text/plain", message);
   });
 
-
   server.on("/post", HTTP_POST, [](AsyncWebServerRequest* request) {
-    // int paramsNr = request->params();  // number of params (e.g., 1)
-    // Serial.println(paramsNr);
-    // Serial.println();
-
-    // AsyncWebParameter* j = request->getParam(0);  // 1st parameter
-    // Serial.print("Size: ");
-    // Serial.print(j->value());  // value ^
-    // Serial.println();
-
-    // request->send(200, "text/plain", "connection successful");
-    // String postBody = request->getParam("action")->value();
     AsyncWebParameter* j = request->getParam(0);
     String postBody = j->value();
 
-    AsyncWebParameter* k = request->getParam(1);
-    se12 = k->value();
+    if (postBody == "reset") {
+      AsyncWebParameter* k = request->getParam(1);
+      getsec = (k->value()).toInt();
+      AsyncWebParameter* l = request->getParam(2);
+      getmin = (l->value()).toInt();
+      AsyncWebParameter* m = request->getParam(3);
+      gethr = (m->value()).toInt();
+      rtc.setTime(getsec, getmin, (gethr - 1), 12, 6, 2023);
+      request->send(200, "text/plain", "time reset successful");
+      lcd.setCursor(12, 3);
 
-    lcd.setCursor(10, 3);
+      lcd.print(String(gethr) + ":" + String(getmin) + ":" + String(getsec));
+    } else {
+      request->send(400, "text/plain", "invalid action");
+    }
 
-    lcd.print(se12);
-    // if (postBody == "resetCounter") {
-    //   String second = request->getParam("second")->value();
-    //   String minute = request->getParam("minute")->value();
-    //   String hour = request->getParam("hour")->value();
-    //   sec = second.toInt();
-    //   min1 = minute.toInt();
-    //   hr = hour.toInt();
-    //   lcd.setCursor(13, 0);
-    //   // rtc.setTime(sec, min1, (hr - 1), 12, 6, 2023);
-    //   lcd.print("P");  //showing time before reset
-
-    //   request->send(200, "text/plain", "time reset successful");
-    // } else {
-    //   request->send(400, "text/plain", "Invalid action");
-    // }
 
 
     request->send(200);
@@ -285,29 +230,41 @@ void setup() {
   storedHour = int(EEPROM.read(rtcHourAddress));
   storedMinute = int(EEPROM.read(rtcMinuteAddress));
   storedSecond = int(EEPROM.read(rtcSecondAddress));
+  // rtc.setTime(storedSecond, storedMinute, storedHour - 1, 12, 6, 2023);
   myvar2 = String(storedHour) + ":" + String(storedMinute) + ":" + String(storedSecond);
   lcd.setCursor(2, 3);
   lcd.print(myvar2);
-}
 
+  p_on_timeval = EEPROM.read(Ttimead);
+  prod_timeval = EEPROM.read(PTadd);
+  n_prod_timeval = EEPROM.read(NPTadd);
+  cycleTimeval = EEPROM.read(Ctimeadd);
+  var1val = EEPROM.read(var1add);
+  counter1val = EEPROM.read(counter1add);
+
+  if (counter1val <= 0) {
+    counter1 = 0;
+    counter1val = 0;
+  } else {
+    counter1 = counter1val - 1;
+  }
+  if (var1val <= 0) {
+    var1 = 0;
+    var1val = 0;
+  } else {
+    var1 = var1val - 2;
+  }
+  if (cycleTimeval <= 0) {
+    cycleTime = 0;
+    cycleTimeval = 0;
+  } else {
+    cycleTime = cycleTimeval - 2;
+  }
+}
+//////////////////////////////////////////////////////////////////////////////////////////////
 void loop()
 
 {
-  // var2 = newVar2;
-  // lcd.setCursor(10, 3);
-
-  // lcd.print(var2);
-
-
-
-  // server.handleClient();
-
-  // String message = (String(p_on_time) + ", " + String(prod_time) + ", " + String(n_prod_time) + "," + String(cycleTime) + "," + String(counter1) + "," + String(rtc.getTime()) + "," + String(var1));
-
-
-
-  // server.send(200, "text/plain", message);
-
 
 
   /*
@@ -337,10 +294,6 @@ button1State = digitalRead(button1Pin);
     {
 
       cycleStartTime = millis();
-
-      //     lcd.setCursor(0, 2);
-
-      // lcd.print(rtc.getTime());
     }
 
     //if (button1State == HIGH)
@@ -352,17 +305,25 @@ button1State = digitalRead(button1Pin);
 
       lcd.print("PRT1:" + String(counter1));
 
+      // if (milliFlag == 1) {
+
+      //   milliFlg=0;
+      // } else {
+
+      //   p_on_time = millis() / 60000;
+      }
+
       cycleTime = millis() - cycleStartTime;  // Calculate the cycle time
 
-      cycleTime = cycleTime / 1000;
+      cycleTime = (cycleTime / 1000);
+      cycleTimeval = cycleTime;
 
       var1 = cycleTime + var1;
+      var1val = var1;
 
       counter1 = counter1 + 1;
+      counter1val = counter1;
 
-      //     lcd.setCursor(0, 3);
-
-      //     lcd.print(rtc.getTime());
 
       lcd.setCursor(0, 1);
 
@@ -379,7 +340,13 @@ button1State = digitalRead(button1Pin);
 
   p_on_time = millis() / 60000;
 
-  prod_time = var1 / 60;
+  if (var1 == 0) {
+    prod_time = 0;
+  } else {
+    prod_time = var1 / 60;
+  }
+
+
 
   n_prod_time = p_on_time - prod_time;
 
@@ -418,6 +385,13 @@ button1State = digitalRead(button1Pin);
   EEPROM.write(rtcMinuteAddress, min1);
   EEPROM.write(rtcSecondAddress, sec);
 
+  EEPROM.write(Ttimead, p_on_timeval);
+  EEPROM.write(PTadd, prod_timeval);
+  EEPROM.write(NPTadd, n_prod_timeval);
+  EEPROM.write(Ctimeadd, cycleTimeval);
+  EEPROM.write(var1add, var1val);
+  EEPROM.write(counter1add, counter1val);
+
   EEPROM.commit();
 
 
@@ -430,6 +404,14 @@ button1State = digitalRead(button1Pin);
     counter1 = 0;
 
     cycleTime = 0;
+
+    /*my*/
+    counter1val = 0;
+    cycleTime = 0;
+    var1 = 0;
+    var1val = 0;
+    resetcycleStartTime = millis();
+    milliFlag = 1;
 
     lcd.setCursor(0, 1);
 
@@ -446,7 +428,7 @@ button1State = digitalRead(button1Pin);
     lcd.setCursor(10, 1);
 
     lcd.print("PRT1:" + String(counter1) + "  ");
-
+    // rtc.setTime(0, 0, 23, 12, 6, 2023);
 
 
     // Store the reset counter values in EEPROM
