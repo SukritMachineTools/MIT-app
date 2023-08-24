@@ -338,7 +338,8 @@ button1State = digitalRead(button1Pin);
 
 
 
-  p_on_time = millis() / 60000;
+  // p_on_time = millis() / 60000;
+  p_on_time = rtc.getMinute();
 
   if (var1 == 0) {
     prod_time = 0;
