@@ -106,6 +106,10 @@ int milliFlag = 0;
 unsigned long resetcycleStartTime = 0;
 String myvar2;
 int getsec, getmin, gethr;
+unsigned long p_o = 0;
+int p_oadd = counter1add + sizeof(int);
+unsigned long p_min = 0;
+int p_minadd = p_oadd + sizeof(int);
 
 AsyncWebServer server(80);
 
@@ -118,6 +122,59 @@ const char* password = "";
 
 void notFound(AsyncWebServerRequest* request) {
   request->send(404, "text/plain", "Not found");
+}
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+void resetparams() {
+  counter1 = 0;
+
+  cycleTime = 0;
+
+  /*my*/
+  counter1val = 0;
+  cycleTime = 0;
+  var1 = 0;
+  var1val = 0;
+  resetcycleStartTime = millis();
+  milliFlag = 1;
+  p_o = 0;
+  p_min = 0;
+
+  lcd.setCursor(0, 1);
+  lcd.print("    ");
+
+  lcd.setCursor(0, 1);
+  lcd.print("C.T.:" + String(cycleTime) + "  ");
+
+  lcd.setCursor(10, 1);
+  lcd.print("   ");
+
+  lcd.setCursor(10, 1);
+  lcd.print("PRT1:" + String(counter1) + "  ");
+
+  rtc.setTime(0, 0, 23, 12, 6, 2023);
+
+  lcd.setCursor(10, 0);
+  lcd.print(String(p_on_time) + " ");
+
+  lcd.setCursor(0, 2);
+  lcd.print("P.T.: " + String(prod_time) + " ");
+
+  lcd.setCursor(10, 2);
+  lcd.print("NP.T.: " + String(n_prod_time) + " ");
+
+  lcd.setCursor(0, 3);
+  lcd.print(String(var1) + " ");
+
+  lcd.setCursor(15, 0);
+  lcd.print(String(p_o) + " ");
+
+  lcd.setCursor(17, 0);
+  lcd.print(String(p_min) + " ");
+  // Store the reset counter values in EEPROM
+
+  EEPROM.put(counter1Address, counter1);
+
+  EEPROM.commit();
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 void setup() {
@@ -139,7 +196,7 @@ void setup() {
   Serial.println(ip);
 
   server.on("/", HTTP_GET, [](AsyncWebServerRequest* request) {
-    String message = (String(p_on_time) + ", " + String(prod_time) + ", " + String(n_prod_time) + "," + String(cycleTime) + "," + String(counter1) + "," + String(var1) + "," + String(rtc.getHour()) + ":" + String(rtc.getMinute()) + ":" + String(rtc.getSecond()));
+    String message = (String(p_on_time) + ", " + String(prod_time) + ", " + String(n_prod_time) + "," + String(cycleTime) + "," + String(counter1) + "," + String(var1) + "," + String(rtc.getHour()) + ":" + String(rtc.getMinute()) + ":" + String(rtc.getSecond()) + "," + String(p_o) + "," + String(p_min));
     request->send(200, "text/plain", message);
   });
 
@@ -155,10 +212,15 @@ void setup() {
       AsyncWebParameter* m = request->getParam(3);
       gethr = (m->value()).toInt();
       rtc.setTime(getsec, getmin, (gethr - 1), 12, 6, 2023);
+      AsyncWebParameter* n = request->getParam(4);
+      p_o = (n->value()).toInt();
+      AsyncWebParameter* o = request->getParam(5);
+      p_min = (o->value()).toInt();
       request->send(200, "text/plain", "time reset successful");
       lcd.setCursor(12, 3);
 
-      lcd.print(String(gethr) + ":" + String(getmin) + ":" + String(getsec));
+      // lcd.print(String(gethr) + ":" + String(getmin) + ":" + String(getsec));
+      lcd.print(String(p_min));
     } else {
       request->send(400, "text/plain", "invalid action");
     }
@@ -241,6 +303,8 @@ void setup() {
   cycleTimeval = EEPROM.read(Ctimeadd);
   var1val = EEPROM.read(var1add);
   counter1val = EEPROM.read(counter1add);
+  p_o = EEPROM.read(p_oadd);
+  p_min = EEPROM.read(p_min);
 
   if (counter1val <= 0) {
     counter1 = 0;
@@ -265,7 +329,13 @@ void setup() {
 void loop()
 
 {
+  lcd.setCursor(15, 0);
 
+  lcd.print(p_o);
+
+  lcd.setCursor(17, 0);
+
+  lcd.print(p_min);
 
   /*
 
@@ -392,59 +462,20 @@ button1State = digitalRead(button1Pin);
   EEPROM.write(Ctimeadd, cycleTimeval);
   EEPROM.write(var1add, var1val);
   EEPROM.write(counter1add, counter1val);
+  EEPROM.write(p_oadd, p_o);
+  EEPROM.write(p_minadd, p_min);
 
   EEPROM.commit();
 
-
+  if (int(rtc.getHour()) >= 12) {
+    resetparams();
+  }
 
 
   //if (digitalRead(resetButtonPin) == LOW) {
 
   if (digitalRead(optoPinrst) == LOW) {
 
-    counter1 = 0;
-
-    cycleTime = 0;
-
-    /*my*/
-    counter1val = 0;
-    cycleTime = 0;
-    var1 = 0;
-    var1val = 0;
-    resetcycleStartTime = millis();
-    milliFlag = 1;
-
-    lcd.setCursor(0, 1);
-    lcd.print("    ");
-
-    lcd.setCursor(0, 1);
-    lcd.print("C.T.:" + String(cycleTime) + "  ");
-
-    lcd.setCursor(10, 1);
-    lcd.print("   ");
-
-    lcd.setCursor(10, 1);
-    lcd.print("PRT1:" + String(counter1) + "  ");
-
-    rtc.setTime(0, 0, 23, 12, 6, 2023);
-
-    lcd.setCursor(10, 0);
-    lcd.print(String(p_on_time) + " ");
-
-    lcd.setCursor(0, 2);
-    lcd.print("P.T.: " + String(prod_time) + " ");
-
-    lcd.setCursor(10, 2);
-    lcd.print("NP.T.: " + String(n_prod_time) + " ");
-
-    lcd.setCursor(0, 3);
-    lcd.print(String(var1) + " ");
-
-
-    // Store the reset counter values in EEPROM
-
-    EEPROM.put(counter1Address, counter1);
-
-    EEPROM.commit();
+    resetparams();
   }
 }
