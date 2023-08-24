@@ -232,7 +232,7 @@ void setup() {
   storedSecond = int(EEPROM.read(rtcSecondAddress));
   rtc.setTime(storedSecond, storedMinute, storedHour - 1, 12, 6, 2023);
   myvar2 = String(storedHour) + ":" + String(storedMinute) + ":" + String(storedSecond);
-  lcd.setCursor(2, 3);
+  lcd.setCursor(3, 3);
   lcd.print(myvar2);
 
   p_on_timeval = EEPROM.read(Ttimead);
@@ -415,21 +415,30 @@ button1State = digitalRead(button1Pin);
     milliFlag = 1;
 
     lcd.setCursor(0, 1);
-
     lcd.print("    ");
 
     lcd.setCursor(0, 1);
-
     lcd.print("C.T.:" + String(cycleTime) + "  ");
 
     lcd.setCursor(10, 1);
-
     lcd.print("   ");
 
     lcd.setCursor(10, 1);
-
     lcd.print("PRT1:" + String(counter1) + "  ");
+
     rtc.setTime(0, 0, 23, 12, 6, 2023);
+
+    lcd.setCursor(10, 0);
+    lcd.print(String(p_on_time) + " ");
+
+    lcd.setCursor(0, 2);
+    lcd.print("P.T.: " + String(prod_time) + " ");
+
+    lcd.setCursor(10, 2);
+    lcd.print("NP.T.: " + String(n_prod_time) + " ");
+
+    lcd.setCursor(0, 3);
+    lcd.print(String(var1) + " ");
 
 
     // Store the reset counter values in EEPROM
