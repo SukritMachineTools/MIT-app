@@ -111,6 +111,13 @@ int p_oadd = counter1add + sizeof(int);
 unsigned long p_min = 0;
 int p_minadd = p_oadd + sizeof(int);
 
+//modes
+unsigned long mode = 1;
+int mtime = 0, setime = 0;
+unsigned long mcycleStartTime = 0, scycleStartTime = 0;
+unsigned long mcycleTime = 0, scycleTime = 0;
+int mcycleadd = p_minadd + sizeof(int), scycleadd = mcycleadd + sizeof(int);
+
 AsyncWebServer server(80);
 
 
@@ -305,6 +312,8 @@ void setup() {
   counter1val = EEPROM.read(counter1add);
   p_o = EEPROM.read(p_oadd);
   p_min = EEPROM.read(p_min);
+  mcycleTime = EEPROM.read(mcycleadd);
+  scycleTime = EEPROM.read(scycleadd);
 
   if (counter1val <= 0) {
     counter1 = 0;
@@ -329,15 +338,16 @@ void setup() {
 void loop()
 
 {
-  lcd.setCursor(15, 0);
+  if (mode == 1) {
+    lcd.setCursor(15, 0);
 
-  lcd.print(p_o);
+    lcd.print(p_o);
 
-  lcd.setCursor(17, 0);
+    lcd.setCursor(17, 0);
 
-  lcd.print(p_min);
+    lcd.print(p_min);
 
-  /*
+    /*
 
 button1State = digitalRead(button1Pin);
 
@@ -353,129 +363,145 @@ button1State = digitalRead(button1Pin);
 
 
 
-  optoPin2State = digitalRead(optoPin2);
+    optoPin2State = digitalRead(optoPin2);
 
-  if (optoPin2State != lastoptoPin2State)
-
-  {
-
-    if (optoPin2State == LOW)
+    if (optoPin2State != lastoptoPin2State)
 
     {
 
-      cycleStartTime = millis();
+      if (optoPin2State == LOW)
+
+      {
+
+        cycleStartTime = millis();
+      }
+
+      //if (button1State == HIGH)
+
+      if (optoPin2State == HIGH)
+
+      {
+        lcd.setCursor(10, 1);
+
+        lcd.print("PRT1:" + String(counter1));
+
+        // if (milliFlag == 1) {
+
+        //   milliFlg = 0;
+        // } else {
+
+        //   p_on_time = millis() / 60000;
+        // }
+
+        cycleTime = millis() - cycleStartTime;  // Calculate the cycle time
+
+        cycleTime = (cycleTime / 1000);
+        cycleTimeval = cycleTime;
+
+        var1 = cycleTime + var1;
+        var1val = var1;
+
+        counter1 = counter1 + 1;
+        counter1val = counter1;
+
+
+        lcd.setCursor(0, 1);
+
+        lcd.print("C.T.:" + String(cycleTime));
+      }
+
+      //lastButton1State = button1State;
+
+      lastoptoPin2State = optoPin2State;
     }
 
-    //if (button1State == HIGH)
-
-    if (optoPin2State == HIGH)
-
-    {
-      lcd.setCursor(10, 1);
-
-      lcd.print("PRT1:" + String(counter1));
-
-      // if (milliFlag == 1) {
-
-      //   milliFlg = 0;
-      // } else {
-
-      //   p_on_time = millis() / 60000;
-      // }
-
-      cycleTime = millis() - cycleStartTime;  // Calculate the cycle time
-
-      cycleTime = (cycleTime / 1000);
-      cycleTimeval = cycleTime;
-
-      var1 = cycleTime + var1;
-      var1val = var1;
-
-      counter1 = counter1 + 1;
-      counter1val = counter1;
 
 
-      lcd.setCursor(0, 1);
 
-      lcd.print("C.T.:" + String(cycleTime));
+    // p_on_time = millis() / 60000;
+    p_on_time = rtc.getMinute() + (int(rtc.getHour()) * 60);
+
+    if (var1 == 0) {
+      prod_time = 0;
+    } else {
+      prod_time = var1 / 60;
     }
 
-    //lastButton1State = button1State;
-
-    lastoptoPin2State = optoPin2State;
-  }
 
 
+    n_prod_time = p_on_time - prod_time;
+
+    lcd.setCursor(0, 0);
+
+    lcd.print(rtc.getTime());
+
+    lcd.setCursor(10, 0);
+
+    lcd.print(p_on_time);
+
+    lcd.setCursor(0, 2);
+    cv
+      lcd.print("P.T.: " + String(prod_time));
+
+    lcd.setCursor(10, 2);
+
+    lcd.print("NP.T.: " + String(n_prod_time));
+
+    lcd.setCursor(0, 3);
+
+    lcd.print(var1);
+
+    currentRtcTime = rtc.getTime();
+    sec = rtc.getSecond();
+    min1 = rtc.getMinute();
+    hr = rtc.getHour();
+
+    // myvar = 75;
+    // myvaraddress = 10 + sizeof(int);
+    // storedHour += hr;
+    // storedMinute += min1;
+    // storedSecond += sec;
+
+    EEPROM.write(rtcHourAddress, hr);
+    EEPROM.write(rtcMinuteAddress, min1);
+    EEPROM.write(rtcSecondAddress, sec);
+
+    EEPROM.write(Ttimead, p_on_timeval);
+    EEPROM.write(PTadd, prod_timeval);
+    EEPROM.write(NPTadd, n_prod_timeval);
+    EEPROM.write(Ctimeadd, cycleTimeval);
+    EEPROM.write(var1add, var1val);
+    EEPROM.write(counter1add, counter1val);
+    EEPROM.write(p_oadd, p_o);
+    EEPROM.write(p_minadd, p_min);
+
+    EEPROM.commit();
+
+    if (int(rtc.getHour()) >= 12) {
+      resetparams();
+    }
 
 
-  // p_on_time = millis() / 60000;
-  p_on_time = rtc.getMinute() + (int(rtc.getHour()) * 60);
+    //if (digitalRead(resetButtonPin) == LOW) {
 
-  if (var1 == 0) {
-    prod_time = 0;
-  } else {
-    prod_time = var1 / 60;
-  }
+    if (digitalRead(optoPinrst) == LOW) {
 
+      resetparams();
+    }
 
+    else if (mode == 2) {
+      //Maintence mode
+      mcycleStartTime = millis();
+      mcycleTime = (millis() - mcycleStartTime) / 60000;
+      EEPROM.write(mcycleadd, mcycleTime);
 
-  n_prod_time = p_on_time - prod_time;
-
-  lcd.setCursor(0, 0);
-
-  lcd.print(rtc.getTime());
-
-  lcd.setCursor(10, 0);
-
-  lcd.print(p_on_time);
-
-  lcd.setCursor(0, 2);
-
-  lcd.print("P.T.: " + String(prod_time));
-
-  lcd.setCursor(10, 2);
-
-  lcd.print("NP.T.: " + String(n_prod_time));
-
-  lcd.setCursor(0, 3);
-
-  lcd.print(var1);
-
-  currentRtcTime = rtc.getTime();
-  sec = rtc.getSecond();
-  min1 = rtc.getMinute();
-  hr = rtc.getHour();
-
-  // myvar = 75;
-  // myvaraddress = 10 + sizeof(int);
-  // storedHour += hr;
-  // storedMinute += min1;
-  // storedSecond += sec;
-
-  EEPROM.write(rtcHourAddress, hr);
-  EEPROM.write(rtcMinuteAddress, min1);
-  EEPROM.write(rtcSecondAddress, sec);
-
-  EEPROM.write(Ttimead, p_on_timeval);
-  EEPROM.write(PTadd, prod_timeval);
-  EEPROM.write(NPTadd, n_prod_timeval);
-  EEPROM.write(Ctimeadd, cycleTimeval);
-  EEPROM.write(var1add, var1val);
-  EEPROM.write(counter1add, counter1val);
-  EEPROM.write(p_oadd, p_o);
-  EEPROM.write(p_minadd, p_min);
-
-  EEPROM.commit();
-
-  if (int(rtc.getHour()) >= 12) {
-    resetparams();
-  }
-
-
-  //if (digitalRead(resetButtonPin) == LOW) {
-
-  if (digitalRead(optoPinrst) == LOW) {
-
-    resetparams();
+    } else if (mode == 3) {
+      //setting mode
+      scycleStartTime = millis();
+      scycleTime = (millis() - scycleStartTime) / 60000;
+      EEPROM.write(scycleadd, scycleTime);
+    } else {
+      mode = 1;
+    }
   }
 }

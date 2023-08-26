@@ -1,0 +1,66 @@
+#include <Wire.h>
+#include <RTClib.h>
+#include <LiquidCrystal_I2C.h>
+#include <Wire.h>
+#include <WiFi.h>
+#include <AsyncTCP.h>
+#include <ESPAsyncWebSrv.h>
+#include <LiquidCrystal_I2C.h>
+#include <EEPROM.h>
+#include <RTClib.h>
+#include <ESP32Time.h>
+
+RTC_DS3231 rtc;
+LiquidCrystal_I2C lcd(0x27, 16, 2);  // Change address if different
+int START_BUTTON_PIN = 13;
+int STOP_BUTTON_PIN = 33;
+
+AsyncWebServer server(80);
+
+
+const char* ssid = "DeviceL1";
+
+const char* password = "";
+
+void setup() {
+  pinMode(START_BUTTON_PIN, INPUT);
+
+  pinMode(STOP_BUTTON_PIN, INPUT);
+  Serial.begin(9600);
+  rtc.begin();
+  lcd.init();
+  lcd.backlight();
+  lcd.setCursor(0, 0);
+  lcd.print("Stopwatch:");
+
+  pinMode(START_BUTTON_PIN, INPUT_PULLUP);
+  pinMode(STOP_BUTTON_PIN, INPUT_PULLUP);
+}
+void loop() {
+  static unsigned long startTime = 0;
+  static bool running = false;
+
+  if (digitalRead(START_BUTTON_PIN) == LOW) {
+    if (!running) {
+      startTime = millis();
+      running = true;
+    }
+  }
+
+  if (digitalRead(STOP_BUTTON_PIN) == LOW) {
+    running = false;
+  }
+
+  if (running) {
+    unsigned long currentTime = millis() - startTime;
+    DateTime now = rtc.now();
+    lcd.setCursor(0, 1);
+    lcd.print(now.hour(), DEC);
+    lcd.print(':');
+    lcd.print(now.minute(), DEC);
+    lcd.print(':');
+    lcd.print(now.second(), DEC);
+    lcd.print("   ");
+    lcd.print(currentTime / 1000);  // Display seconds
+  }
+}

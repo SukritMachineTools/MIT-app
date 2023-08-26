@@ -1,0 +1,149 @@
+#include <Wire.h>
+#include <WiFi.h>
+#include <AsyncTCP.h>
+#include <ESPAsyncWebSrv.h>
+#include <LiquidCrystal_I2C.h>
+#include <EEPROM.h>
+#include <RTClib.h>
+#include <ESP32Time.h>
+
+ESP32Time rtc(3600);  // offset in seconds GMT+1
+
+
+
+LiquidCrystal_I2C lcd(0x27, 20, 4);  // Set the I2C address to 0x27 and dimensions to 20x4
+int optoPin2 = 13;
+
+int optoPinrst = 33;
+int optoPinm1 = 18;
+int optoPinm2 = 27;
+int optoPinm3 = 26;
+int optoPinm4 = 14;
+int optoPinm5 = 25;
+
+
+int optoPin2State = LOW;
+
+//int lastButton1State = LOW;
+
+int lastoptoPin2State = LOW;
+
+int optoPinm1State = LOW;
+
+AsyncWebServer server(80);
+
+
+const char* ssid = "DeviceL1";
+
+const char* password = "";
+
+void setup() {
+
+  pinMode(optoPin2, INPUT);
+
+  pinMode(optoPinrst, INPUT);
+  pinMode(optoPinm1, INPUT);
+
+  pinMode(optoPinm2, INPUT);
+  pinMode(optoPinm3, INPUT);
+  pinMode(optoPinm4, INPUT);
+  pinMode(optoPinm5, INPUT);
+
+
+
+  WiFi.mode(WIFI_AP);
+
+  WiFi.softAP(ssid, password);
+
+  IPAddress ip = WiFi.softAPIP();
+
+  Serial.print("AP IP address: ");
+
+  Serial.println(ip);
+  // server.onNotFound(notFound);
+
+  server.begin();
+
+
+
+  // server.on("/", handleRoot);
+
+  // server.begin();
+
+  Serial.println("Server started");
+
+  lcd.begin(20, 4);
+
+  lcd.init();
+
+  lcd.backlight();
+
+
+
+  rtc.setTime(0, 0, 23, 12, 6, 2023);
+
+
+
+  // EEPROM.begin(sizeof(counter1) + sizeof(cycleTime));  // Initialize EEPROM with the desired data size
+  EEPROM.begin(512);
+  pinMode(optoPin2, INPUT_PULLUP);
+
+
+
+  //pinMode(resetButtonPin, INPUT_PULLUP);
+
+  pinMode(optoPinrst, INPUT_PULLUP);
+  pinMode(optoPinm1, INPUT_PULLUP);
+  pinMode(optoPinm2, INPUT_PULLUP);
+  pinMode(optoPinm3, INPUT_PULLUP);
+  pinMode(optoPinm4, INPUT_PULLUP);
+  pinMode(optoPinm5, INPUT_PULLUP);
+}
+
+void loop() {
+  optoPin2State = digitalRead(optoPin2);
+
+  if (optoPin2State != lastoptoPin2State)
+
+  {
+
+    if (optoPin2State == LOW)
+
+    {
+
+      lcd.setCursor(0, 0);
+
+      lcd.print("Hello");
+    }
+  }
+
+  if (digitalRead(optoPinm1) == LOW) {
+    //open circuit
+    lcd.setCursor(0, 0);
+
+    lcd.print("opto PIN 1 ");
+  } else if (digitalRead(optoPinm2) == LOW) {
+    lcd.setCursor(0, 0);
+
+    lcd.print("opto PIN 2 ");
+  } else if (digitalRead(optoPinm3) == LOW) {
+    //open circuit
+    lcd.setCursor(0, 0);
+
+    lcd.print("opto PIN 3 ");
+  } else if (digitalRead(optoPinm4) == LOW) {
+    //open circuit
+    lcd.setCursor(0, 0);
+
+    lcd.print("opto PIN 4 ");
+  } else if (digitalRead(optoPinm5) == LOW) {
+    //open circuit
+    lcd.setCursor(0, 0);
+
+    lcd.print("opto PIN 5 ");
+  } else {
+    lcd.setCursor(0, 0);
+
+    lcd.print("turn please");
+  }
+}

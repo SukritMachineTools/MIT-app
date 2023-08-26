@@ -24,10 +24,15 @@ int t_stop = 0;
 int optoPin2 = 13;
 
 int optoPinrst = 33;
-
+// int optoPinm1 = 18;
+int optoPinm1 = 18;
+int optoPinm2 = 27;
+int optoPinm3 = 26;
+int optoPinm4 = 14;
+int optoPinm5 = 25;
 // int button1Pin = 18; // Button 1 pin
 
-int prod_ButtonPin = 26;  // Button 2 pin
+// int prod_ButtonPin = 26;  // Button 2 pin
 
 // int resetButtonPin = 13; // Reset button pin
 
@@ -43,11 +48,13 @@ int optoPin2State = LOW;
 
 int lastoptoPin2State = LOW;
 
+int optoPinm1State = LOW;
 
 
-int p_b_state = LOW;
 
-int p_b_laststate = LOW;
+// int p_b_state = LOW;
+
+// int p_b_laststate = LOW;
 
 unsigned long lastDebounceTime1 = 0;
 
@@ -112,11 +119,14 @@ unsigned long p_min = 0;
 int p_minadd = p_oadd + sizeof(int);
 
 //modes
-unsigned long mode = 1;
+unsigned long mode = 0;
 int mtime = 0, setime = 0;
 unsigned long mcycleStartTime = 0, scycleStartTime = 0;
 unsigned long mcycleTime = 0, scycleTime = 0;
 int mcycleadd = p_minadd + sizeof(int), scycleadd = mcycleadd + sizeof(int);
+int pflag = 0, mflag = 0, sflag = 1;
+static unsigned long mTime = 0, pTime = 0, sTime = 0;
+static bool srunning = false;
 
 AsyncWebServer server(80);
 
@@ -189,6 +199,11 @@ void setup() {
   pinMode(optoPin2, INPUT);
 
   pinMode(optoPinrst, INPUT);
+  pinMode(optoPinm1, INPUT);
+  pinMode(optoPinm2, INPUT);
+  pinMode(optoPinm3, INPUT);
+  pinMode(optoPinm4, INPUT);
+  pinMode(optoPinm5, INPUT);
 
 
 
@@ -232,8 +247,6 @@ void setup() {
       request->send(400, "text/plain", "invalid action");
     }
 
-
-
     request->send(200);
   });
 
@@ -241,33 +254,21 @@ void setup() {
 
 
   server.onNotFound(notFound);
-
   server.begin();
 
-
-
-  // server.on("/", handleRoot);
-
-  // server.begin();
 
   Serial.println("Server started");
 
   lcd.begin(20, 4);
-
   lcd.init();
-
   lcd.backlight();
 
 
 
   rtc.setTime(0, 0, 23, 12, 6, 2023);
 
-
-
   // EEPROM.begin(sizeof(counter1) + sizeof(cycleTime));  // Initialize EEPROM with the desired data size
   EEPROM.begin(512);
-
-
 
   // Read the counter and cycle time values from EEPROM during initialization
 
@@ -293,6 +294,11 @@ void setup() {
   //pinMode(resetButtonPin, INPUT_PULLUP);
 
   pinMode(optoPinrst, INPUT_PULLUP);
+  pinMode(optoPinm1, INPUT_PULLUP);
+  pinMode(optoPinm2, INPUT_PULLUP);
+  pinMode(optoPinm3, INPUT_PULLUP);
+  pinMode(optoPinm4, INPUT_PULLUP);
+  pinMode(optoPinm5, INPUT_PULLUP);
 
   //pinMode(ledPin, OUTPUT);
 
@@ -312,8 +318,8 @@ void setup() {
   counter1val = EEPROM.read(counter1add);
   p_o = EEPROM.read(p_oadd);
   p_min = EEPROM.read(p_min);
-  mcycleTime = EEPROM.read(mcycleadd);
-  scycleTime = EEPROM.read(scycleadd);
+  // mcycleTime = EEPROM.read(mcycleadd);
+  // scycleTime = EEPROM.read(scycleadd);
 
   if (counter1val <= 0) {
     counter1 = 0;
@@ -338,7 +344,7 @@ void setup() {
 void loop()
 
 {
-  if (mode == 1) {
+  if (digitalRead(optoPinm1) == LOW) {
     lcd.setCursor(15, 0);
 
     lcd.print(p_o);
@@ -346,22 +352,6 @@ void loop()
     lcd.setCursor(17, 0);
 
     lcd.print(p_min);
-
-    /*
-
-button1State = digitalRead(button1Pin);
-
- if (button1State != lastButton1State)
-
-   {
-
-    if (button1State == LOW)
-
-     {
-
-      */
-
-
 
     optoPin2State = digitalRead(optoPin2);
 
@@ -376,7 +366,6 @@ button1State = digitalRead(button1Pin);
         cycleStartTime = millis();
       }
 
-      //if (button1State == HIGH)
 
       if (optoPin2State == HIGH)
 
@@ -384,14 +373,6 @@ button1State = digitalRead(button1Pin);
         lcd.setCursor(10, 1);
 
         lcd.print("PRT1:" + String(counter1));
-
-        // if (milliFlag == 1) {
-
-        //   milliFlg = 0;
-        // } else {
-
-        //   p_on_time = millis() / 60000;
-        // }
 
         cycleTime = millis() - cycleStartTime;  // Calculate the cycle time
 
@@ -410,15 +391,9 @@ button1State = digitalRead(button1Pin);
         lcd.print("C.T.:" + String(cycleTime));
       }
 
-      //lastButton1State = button1State;
-
       lastoptoPin2State = optoPin2State;
     }
 
-
-
-
-    // p_on_time = millis() / 60000;
     p_on_time = rtc.getMinute() + (int(rtc.getHour()) * 60);
 
     if (var1 == 0) {
@@ -427,8 +402,6 @@ button1State = digitalRead(button1Pin);
       prod_time = var1 / 60;
     }
 
-
-
     n_prod_time = p_on_time - prod_time;
 
     lcd.setCursor(0, 0);
@@ -436,31 +409,21 @@ button1State = digitalRead(button1Pin);
     lcd.print(rtc.getTime());
 
     lcd.setCursor(10, 0);
-
     lcd.print(p_on_time);
 
     lcd.setCursor(0, 2);
-    cv
-      lcd.print("P.T.: " + String(prod_time));
+    lcd.print("P.T.: " + String(prod_time));
 
     lcd.setCursor(10, 2);
-
     lcd.print("NP.T.: " + String(n_prod_time));
 
     lcd.setCursor(0, 3);
-
     lcd.print(var1);
 
     currentRtcTime = rtc.getTime();
     sec = rtc.getSecond();
     min1 = rtc.getMinute();
     hr = rtc.getHour();
-
-    // myvar = 75;
-    // myvaraddress = 10 + sizeof(int);
-    // storedHour += hr;
-    // storedMinute += min1;
-    // storedSecond += sec;
 
     EEPROM.write(rtcHourAddress, hr);
     EEPROM.write(rtcMinuteAddress, min1);
@@ -482,26 +445,54 @@ button1State = digitalRead(button1Pin);
     }
 
 
-    //if (digitalRead(resetButtonPin) == LOW) {
-
     if (digitalRead(optoPinrst) == LOW) {
 
       resetparams();
     }
-
-    else if (mode == 2) {
-      //Maintence mode
-      mcycleStartTime = millis();
-      mcycleTime = (millis() - mcycleStartTime) / 60000;
-      EEPROM.write(mcycleadd, mcycleTime);
-
-    } else if (mode == 3) {
-      //setting mode
-      scycleStartTime = millis();
-      scycleTime = (millis() - scycleStartTime) / 60000;
-      EEPROM.write(scycleadd, scycleTime);
-    } else {
-      mode = 1;
+  }  //mode1
+  else if (digitalRead(optoPinm2) == LOW) {
+    //Maintence mode
+    sflag = 0;
+    if (sflag == 0) {
+      srunning = false;
     }
+
+
+    // mcycleTime = (millis() - mcycleStartTime) / 60000;
+    // EEPROM.write(mcycleadd, mcycleTime);
+
+    // lcd.setCursor(0, 0);
+    // lcd.print(String(mcycleTime));
+
+
+  } else if (digitalRead(optoPinm3) == LOW) {
+    //setting mode
+    sflag = 1;
+    if (sflag == 1) {
+      if (!srunning) {
+        scycleStartTime = millis();
+        srunning = true;
+      }
+    }
+
+
+    if (srunning) {
+      scycleTime = millis() - scycleStartTime;
+      lcd.setCursor(0, 1);
+      lcd.print(scycleTime / 1000);
+    }
+
+    // scycleTime = (millis() - scycleStartTime) / 60000;
+    // EEPROM.write(scycleadd, scycleTime);
+
+    // lcd.setCursor(0, 0);
+    // lcd.print(String(scycleTime) + " mins");
+
+  } else {
+    lcd.setCursor(0, 0);
+    sflag = 1;
+    pflag = 1;
+    mflag = 1;
+    lcd.print("Error :D");
   }
 }
