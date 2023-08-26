@@ -142,6 +142,10 @@ const char* password = "";
 void notFound(AsyncWebServerRequest* request) {
   request->send(404, "text/plain", "Not found");
 }
+/////////////////////////////////////////////////////
+void resettime() {
+  //code
+}
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 void resetparams() {
   counter1 = 0;
@@ -157,6 +161,8 @@ void resetparams() {
   milliFlag = 1;
   p_o = 0;
   p_min = 0;
+  mcycleTime = 0;
+  scycleTime = 0;
 
   lcd.setCursor(0, 1);
   lcd.print("    ");
@@ -189,6 +195,9 @@ void resetparams() {
 
   lcd.setCursor(17, 0);
   lcd.print(String(p_min) + " ");
+
+  EEPROM.write(mcycleadd, mcycleTime);
+  EEPROM.write(scycleadd, scycleTime);
   // Store the reset counter values in EEPROM
 
   EEPROM.put(counter1Address, counter1);
@@ -469,7 +478,7 @@ void loop()
       lcd.print("Maintenance ;)");
       lcd.setCursor(0, 1);
       lcd.print(mcycleTime / 1000);
-
+      EEPROM.write(mcycleadd, mcycleTime);
       lcd.setCursor(10, 0);
       lcd.print(emp);
       lcd.setCursor(10, 1);
@@ -507,6 +516,7 @@ void loop()
       lcd.print("Setting Mode ;)");
       lcd.setCursor(0, 1);
       lcd.print(scycleTime / 1000);
+      EEPROM.write(scycleadd, scycleTime);
 
       lcd.setCursor(10, 0);
       lcd.print(emp);
