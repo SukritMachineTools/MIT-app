@@ -116,7 +116,7 @@ unsigned long mode = 1;
 int mtime = 0, setime = 0;
 unsigned long mcycleStartTime = 0, scycleStartTime = 0;
 unsigned long mcycleTime = 0, scycleTime = 0;
-int mcycleadd = p_minadd + sizeof(int), scycleadd = mcycleadd;
+int mcycleadd = p_minadd + sizeof(int), scycleadd = mcycleadd + sizeof(int);
 
 AsyncWebServer server(80);
 
@@ -440,8 +440,8 @@ button1State = digitalRead(button1Pin);
     lcd.print(p_on_time);
 
     lcd.setCursor(0, 2);
-cv
-    lcd.print("P.T.: " + String(prod_time));
+    cv
+      lcd.print("P.T.: " + String(prod_time));
 
     lcd.setCursor(10, 2);
 
