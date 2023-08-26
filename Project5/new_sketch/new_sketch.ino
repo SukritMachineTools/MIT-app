@@ -126,7 +126,9 @@ unsigned long mcycleTime = 0, scycleTime = 0;
 int mcycleadd = p_minadd + sizeof(int), scycleadd = mcycleadd + sizeof(int);
 int pflag = 0, mflag = 0, sflag = 1;
 static unsigned long mTime = 0, pTime = 0, sTime = 0;
-static bool srunning = false;
+static bool srunning = false, mrunning = false;
+
+String emp = "     ";
 
 AsyncWebServer server(80);
 
@@ -345,6 +347,9 @@ void loop()
 
 {
   if (digitalRead(optoPinm1) == LOW) {
+    mrunning = false;
+    srunning = false;
+
     lcd.setCursor(15, 0);
 
     lcd.print(p_o);
@@ -452,10 +457,33 @@ void loop()
   }  //mode1
   else if (digitalRead(optoPinm2) == LOW) {
     //Maintence mode
-    sflag = 0;
-    if (sflag == 0) {
-      srunning = false;
+    srunning = false;
+    if (!mrunning) {
+      mcycleStartTime = millis();
+      mrunning = true;
     }
+
+    if (mrunning) {
+      mcycleTime = millis() - mcycleStartTime;
+      lcd.setCursor(0, 0);
+      lcd.print("Maintenance ;)");
+      lcd.setCursor(0, 1);
+      lcd.print(mcycleTime / 1000);
+
+      lcd.setCursor(10, 0);
+      lcd.print(emp);
+      lcd.setCursor(10, 1);
+      lcd.print(emp);
+      lcd.setCursor(10, 2);
+      lcd.print(emp);
+      lcd.setCursor(10, 3);
+      lcd.print(emp);
+      lcd.setCursor(0, 2);
+      lcd.print(emp);
+      lcd.setCursor(0, 3);
+      lcd.print(emp);
+    }
+
 
 
     // mcycleTime = (millis() - mcycleStartTime) / 60000;
@@ -467,32 +495,39 @@ void loop()
 
   } else if (digitalRead(optoPinm3) == LOW) {
     //setting mode
-    sflag = 1;
-    if (sflag == 1) {
-      if (!srunning) {
-        scycleStartTime = millis();
-        srunning = true;
-      }
+    mrunning = false;
+    if (!srunning) {
+      scycleStartTime = millis();
+      srunning = true;
     }
-
 
     if (srunning) {
       scycleTime = millis() - scycleStartTime;
+      lcd.setCursor(0, 0);
+      lcd.print("Setting Mode ;)");
       lcd.setCursor(0, 1);
       lcd.print(scycleTime / 1000);
+
+      lcd.setCursor(10, 0);
+      lcd.print(emp);
+      lcd.setCursor(10, 1);
+      lcd.print(emp);
+      lcd.setCursor(2, 1);
+      lcd.print(emp);
+      lcd.setCursor(10, 2);
+      lcd.print(emp);
+      lcd.setCursor(10, 3);
+      lcd.print(emp);
+      lcd.setCursor(0, 2);
+      lcd.print(emp);
+      lcd.setCursor(0, 3);
+      lcd.print(emp);
     }
-
-    // scycleTime = (millis() - scycleStartTime) / 60000;
-    // EEPROM.write(scycleadd, scycleTime);
-
-    // lcd.setCursor(0, 0);
-    // lcd.print(String(scycleTime) + " mins");
 
   } else {
     lcd.setCursor(0, 0);
-    sflag = 1;
-    pflag = 1;
-    mflag = 1;
+    srunning = false;
+    mrunning = false;
     lcd.print("Error :D");
   }
 }
