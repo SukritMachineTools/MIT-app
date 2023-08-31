@@ -127,7 +127,7 @@ int mcycleadd = p_minadd + sizeof(int), scycleadd = mcycleadd + sizeof(int);
 int pflag = 0, mflag = 0, sflag = 1;
 static unsigned long mTime = 0, pTime = 0, sTime = 0;
 static bool srunning = false, mrunning = false;
-bool functionExecuted = false;
+int mhr = 0, mmin = 0, shr = 0, smin = 0;
 
 String emp = "     ";
 
@@ -274,7 +274,6 @@ void setup() {
   lcd.begin(20, 4);
   lcd.init();
   lcd.backlight();
-  // lcd.clear();
 
 
   rtc.setTime(0, 0, 23, 12, 6, 2023);
@@ -486,12 +485,19 @@ void loop()
     }
 
     if (mrunning) {
-      mcycleTime = millis() - mcycleStartTime;
+      mcycleTime = (millis() - mcycleStartTime) / 1000;
+      if (mcycleTime == 0) {
+        mhr = 0;
+        mmin = 0;
+      } else {
+        mhr = mcycleTime / 3600;
+        mmin = mcycleTime / 60;
+      }
       lcd.setCursor(0, 0);
       lcd.print("Maintenance ;)");
       lcd.setCursor(0, 1);
-      lcd.print(mcycleTime / 1000);
-      EEPROM.write(mcycleadd, mcycleTime);
+      lcd.print(String(mhr) + ":" + String(mmin) + ":" + String(mcycleTime));
+      EEPROM.write(mcycleadd, mmin);
       lcd.setCursor(10, 0);
       lcd.print(emp);
       lcd.setCursor(10, 1);
@@ -502,17 +508,13 @@ void loop()
       lcd.print(emp);
       lcd.setCursor(0, 2);
       lcd.print(emp);
-      lcd.setCursor(0, 3);
-      lcd.print(emp);
-    }
+      // lcd.setCursor(0, 3);
+      // lcd.print(emp);
+    }  //mode2
 
 
 
-    // mcycleTime = (millis() - mcycleStartTime) / 60000;
-    // EEPROM.write(mcycleadd, mcycleTime);
 
-    // lcd.setCursor(0, 0);
-    // lcd.print(String(mcycleTime));
 
 
   } else if (digitalRead(optoPinm3) == LOW) {
@@ -531,27 +533,35 @@ void loop()
     }
 
     if (srunning) {
-      scycleTime = millis() - scycleStartTime;
+      scycleTime = (millis() - scycleStartTime) / 1000;
+      if (scycleTime == 0) {
+        smin = 0;
+        shr = 0;
+      } else {
+        smin = scycleTime / 60;
+        shr = scycleTime / 3600;
+      }
       lcd.setCursor(0, 0);
       lcd.print("Setting Mode ;)");
       lcd.setCursor(0, 1);
-      lcd.print(scycleTime / 1000);
-      EEPROM.write(scycleadd, scycleTime);
+      lcd.print(String(shr) + ":" + String(smin) + ":" + String(scycleTime));
+      // EEPROM.write(scycleadd, scycleTime);
+      EEPROM.write(scycleadd, smin);
 
       lcd.setCursor(10, 0);
       lcd.print(emp);
       lcd.setCursor(10, 1);
       lcd.print(emp);
-      lcd.setCursor(2, 1);
-      lcd.print(emp);
+      // lcd.setCursor(2, 1);
+      // lcd.print(emp);
       lcd.setCursor(10, 2);
       lcd.print(emp);
       lcd.setCursor(10, 3);
       lcd.print(emp);
       lcd.setCursor(0, 2);
       lcd.print(emp);
-      lcd.setCursor(0, 3);
-      lcd.print(emp);
+      // lcd.setCursor(0, 3);
+      // lcd.print(emp);
     }
 
   } else {
