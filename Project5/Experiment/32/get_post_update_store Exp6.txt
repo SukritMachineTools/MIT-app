@@ -25,8 +25,8 @@ int optoPin2 = 13;
 
 int optoPinrst = 33;
 // int optoPinm1 = 18;
-int optoPinm1 = 18;
-int optoPinm2 = 27;
+int optoPinm1 = 27;
+int optoPinm2 = 18;
 int optoPinm3 = 26;
 int optoPinm4 = 14;
 int optoPinm5 = 25;
@@ -123,7 +123,8 @@ unsigned long mode = 0;
 int mtime = 0, setime = 0;
 unsigned long mcycleStartTime = 0, scycleStartTime = 0;
 unsigned long mcycleTime = 0, scycleTime = 0;
-int mcycleadd = p_minadd + sizeof(int), scycleadd = mcycleadd + sizeof(int);
+unsigned long mcycleadd = p_minadd + sizeof(unsigned long);
+unsigned long scycleadd = mcycleadd + sizeof(unsigned long);
 int pflag = 0, mflag = 0, sflag = 1;
 static unsigned long mTime = 0, pTime = 0, sTime = 0;
 static bool srunning = false, mrunning = false;
@@ -230,7 +231,7 @@ void setup() {
   Serial.println(ip);
 
   server.on("/", HTTP_GET, [](AsyncWebServerRequest* request) {
-    String message = (String(p_on_time) + ", " + String(prod_time) + ", " + String(n_prod_time) + "," + String(cycleTime) + "," + String(counter1) + "," + String(var1) + "," + String(rtc.getHour()) + ":" + String(rtc.getMinute()) + ":" + String(rtc.getSecond()) + "," + String(p_o) + "," + String(p_min));
+    String message = (String(p_on_time) + ", " + String(prod_time) + ", " + String(n_prod_time) + "," + String(cycleTime) + "," + String(counter1) + "," + String(var1) + "," + String(rtc.getHour()) + ":" + String(rtc.getMinute()) + ":" + String(rtc.getSecond()) + "," + String(p_o) + "," + String(p_min) + "," + String(mmin) + "," + String(smin));
     request->send(200, "text/plain", message);
   });
 
@@ -329,8 +330,8 @@ void setup() {
   counter1val = EEPROM.read(counter1add);
   p_o = EEPROM.read(p_oadd);
   p_min = EEPROM.read(p_min);
-  // mcycleTime = EEPROM.read(mcycleadd);
-  // scycleTime = EEPROM.read(scycleadd);
+  mmin = EEPROM.read(mcycleadd);
+  smin = EEPROM.read(scycleadd);
 
   if (counter1val <= 0) {
     counter1 = 0;
