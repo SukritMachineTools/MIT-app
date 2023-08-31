@@ -127,6 +127,7 @@ int mcycleadd = p_minadd + sizeof(int), scycleadd = mcycleadd + sizeof(int);
 int pflag = 0, mflag = 0, sflag = 1;
 static unsigned long mTime = 0, pTime = 0, sTime = 0;
 static bool srunning = false, mrunning = false;
+bool functionExecuted = false;
 
 String emp = "     ";
 
@@ -164,6 +165,7 @@ void resetparams() {
   mcycleTime = 0;
   scycleTime = 0;
 
+  lcd.clear();
   lcd.setCursor(0, 1);
   lcd.print("    ");
 
@@ -273,7 +275,7 @@ void setup() {
   lcd.begin(20, 4);
   lcd.init();
   lcd.backlight();
-
+  lcd.clear();
 
 
   rtc.setTime(0, 0, 23, 12, 6, 2023);
@@ -358,7 +360,10 @@ void loop()
   if (digitalRead(optoPinm1) == LOW) {
     mrunning = false;
     srunning = false;
-
+    if (!functionExecuted) {
+      lcd.clear();
+      functionExecuted = true;
+    }
     lcd.setCursor(15, 0);
 
     lcd.print(p_o);
@@ -466,6 +471,17 @@ void loop()
   }  //mode1
   else if (digitalRead(optoPinm2) == LOW) {
     //Maintence mode
+    if (!functionExecuted) {
+      lcd.clear();
+      functionExecuted = true;
+    }
+    storedHour = int(EEPROM.read(rtcHourAddress));
+    storedMinute = int(EEPROM.read(rtcMinuteAddress));
+    storedSecond = int(EEPROM.read(rtcSecondAddress));
+    rtc.setTime(storedSecond, storedMinute, storedHour - 1, 12, 6, 2023);
+    myvar2 = String(storedHour) + ":" + String(storedMinute) + ":" + String(storedSecond);
+    lcd.setCursor(3, 3);
+    lcd.print(myvar2);
     srunning = false;
     if (!mrunning) {
       mcycleStartTime = millis();
@@ -504,6 +520,17 @@ void loop()
 
   } else if (digitalRead(optoPinm3) == LOW) {
     //setting mode
+    if (!functionExecuted) {
+      lcd.clear();
+      functionExecuted = true;
+    }
+    storedHour = int(EEPROM.read(rtcHourAddress));
+    storedMinute = int(EEPROM.read(rtcMinuteAddress));
+    storedSecond = int(EEPROM.read(rtcSecondAddress));
+    rtc.setTime(storedSecond, storedMinute, storedHour - 1, 12, 6, 2023);
+    myvar2 = String(storedHour) + ":" + String(storedMinute) + ":" + String(storedSecond);
+    lcd.setCursor(3, 3);
+    lcd.print(myvar2);
     mrunning = false;
     if (!srunning) {
       scycleStartTime = millis();
@@ -535,6 +562,7 @@ void loop()
     }
 
   } else {
+    functionExecuted = false;
     lcd.setCursor(0, 0);
     srunning = false;
     mrunning = false;
