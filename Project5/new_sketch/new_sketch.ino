@@ -230,7 +230,7 @@ void setup() {
   Serial.println(ip);
 
   server.on("/", HTTP_GET, [](AsyncWebServerRequest* request) {
-    String message = (String(p_on_time) + ", " + String(prod_time) + ", " + String(n_prod_time) + "," + String(cycleTime) + "," + String(counter1) + "," + String(var1) + "," + String(rtc.getHour()) + ":" + String(rtc.getMinute()) + ":" + String(rtc.getSecond()) + "," + String(p_o) + "," + String(p_min));
+    String message = (String(p_on_time) + ", " + String(prod_time) + ", " + String(n_prod_time) + "," + String(cycleTime) + "," + String(counter1) + "," + String(var1) + "," + String(rtc.getHour()) + ":" + String(rtc.getMinute()) + ":" + String(rtc.getSecond()) + "," + String(p_o) + "," + String(p_min) + "," + String(mmin) + "," + String(smin));
     request->send(200, "text/plain", message);
   });
 
@@ -329,8 +329,8 @@ void setup() {
   counter1val = EEPROM.read(counter1add);
   p_o = EEPROM.read(p_oadd);
   p_min = EEPROM.read(p_min);
-  // mcycleTime = EEPROM.read(mcycleadd);
-  // scycleTime = EEPROM.read(scycleadd);
+  mmin = EEPROM.read(mcycleadd);
+  smin = EEPROM.read(scycleadd);
 
   if (counter1val <= 0) {
     counter1 = 0;
