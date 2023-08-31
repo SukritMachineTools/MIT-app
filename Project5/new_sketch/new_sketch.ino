@@ -366,6 +366,12 @@ void loop()
     lcd.setCursor(17, 0);
 
     lcd.print(p_min);
+    lcd.setCursor(0, 1);
+
+    lcd.print("C.T.:" + String(cycleTime));
+    lcd.setCursor(10, 1);
+
+    lcd.print("PRT1:" + String(counter1));
 
     optoPin2State = digitalRead(optoPin2);
 
