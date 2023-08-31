@@ -264,9 +264,12 @@ void setup() {
       min1 = getmin;
       hr = gethr;
 
+
       EEPROM.write(rtcHourAddress, hr);
       EEPROM.write(rtcMinuteAddress, min1);
       EEPROM.write(rtcSecondAddress, sec);
+      EEPROM.write(p_oadd, p_o);
+      EEPROM.write(p_minadd, p_min);
       EEPROM.commit();
     } else {
       request->send(400, "text/plain", "invalid action");
