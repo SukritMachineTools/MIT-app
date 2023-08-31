@@ -497,7 +497,7 @@ void loop()
       lcd.setCursor(0, 0);
       lcd.print("Maintenance ;)");
       lcd.setCursor(0, 1);
-      lcd.print(String(mhr) + ":" + String(mmin) + ":" + String(mcycleTime));
+      lcd.print(String(mhr) + ":" + String(mmin) + ":" + String(mcycleTime % 60));
       EEPROM.write(mcycleadd, mmin);
       lcd.setCursor(10, 0);
       lcd.print(emp);
@@ -545,7 +545,7 @@ void loop()
       lcd.setCursor(0, 0);
       lcd.print("Setting Mode ;)");
       lcd.setCursor(0, 1);
-      lcd.print(String(shr) + ":" + String(smin) + ":" + String(scycleTime));
+      lcd.print(String(shr) + ":" + String(smin) + ":" + String(scycleTime % 60));
       // EEPROM.write(scycleadd, scycleTime);
       EEPROM.write(scycleadd, smin);
 

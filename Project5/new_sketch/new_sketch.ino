@@ -165,6 +165,8 @@ void resetparams() {
   p_min = 0;
   mcycleTime = 0;
   scycleTime = 0;
+  mmin = 0;
+  smin = 0;
 
   lcd.setCursor(0, 1);
   lcd.print("    ");
@@ -198,8 +200,9 @@ void resetparams() {
   lcd.setCursor(17, 0);
   lcd.print(String(p_min) + " ");
 
-  EEPROM.write(mcycleadd, mcycleTime);
-  EEPROM.write(scycleadd, scycleTime);
+  EEPROM.write(mcycleadd, mmin);
+  EEPROM.write(scycleadd, smin);
+
   // Store the reset counter values in EEPROM
 
   EEPROM.put(counter1Address, counter1);
@@ -256,6 +259,15 @@ void setup() {
 
       // lcd.print(String(gethr) + ":" + String(getmin) + ":" + String(getsec));
       lcd.print(String(p_min));
+
+      sec = getsec;
+      min1 = getmin;
+      hr = gethr;
+
+      EEPROM.write(rtcHourAddress, hr);
+      EEPROM.write(rtcMinuteAddress, min1);
+      EEPROM.write(rtcSecondAddress, sec);
+      EEPROM.commit();
     } else {
       request->send(400, "text/plain", "invalid action");
     }
