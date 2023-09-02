@@ -234,7 +234,7 @@ void setup() {
   Serial.println(ip);
 
   server.on("/", HTTP_GET, [](AsyncWebServerRequest* request) {
-    String message = (String(p_on_time) + ", " + String(prod_time) + ", " + String(n_prod_time) + "," + String(cycleTime) + "," + String(counter1) + "," + String(var1) + "," + String(rtc.getHour()) + ":" + String(rtc.getMinute()) + ":" + String(rtc.getSecond()) + "," + String(p_o) + "," + String(p_min) + "," + String(mmin) + "," + String(smin));
+    String message = (String(p_on_time) + ", " + String(prod_time) + ", " + String(n_prod_time) + "," + String(cycleTime) + "," + String(counter1) + "," + String(var1) + "," + String(rtc.getHour()) + ":" + String(rtc.getMinute()) + ":" + String(rtc.getSecond()) + "," + String(p_o) + "," + String(p_min) + "," + String(mmin) + "," + String(smin) + "," + String(mode));
     request->send(200, "text/plain", message);
   });
 
@@ -372,8 +372,11 @@ void loop()
 
 {
   if (digitalRead(optoPinm1) == LOW) {
+    mode = 2;
     mrunning = false;
     srunning = false;
+    lcd.setCursor(17, 3);
+    lcd.print(mode);
     lcd.setCursor(15, 0);
 
     lcd.print(p_o);
@@ -494,6 +497,9 @@ void loop()
     myvar2 = String(storedHour) + ":" + String(storedMinute) + ":" + String(storedSecond);
     lcd.setCursor(3, 3);
     lcd.print(myvar2);
+    mode = 1;
+    lcd.setCursor(17, 3);
+    lcd.print(mode);
     srunning = false;
     if (!mrunning) {
       mcycleStartTime = millis();
@@ -542,6 +548,9 @@ void loop()
     myvar2 = String(storedHour) + ":" + String(storedMinute) + ":" + String(storedSecond);
     lcd.setCursor(3, 3);
     lcd.print(myvar2);
+    mode = 3;
+    lcd.setCursor(17, 3);
+    lcd.print(mode);
     mrunning = false;
     if (!srunning) {
       scycleStartTime = millis();
