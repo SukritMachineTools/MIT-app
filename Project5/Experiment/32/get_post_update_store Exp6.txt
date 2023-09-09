@@ -200,10 +200,14 @@ void resetparams() {
   lcd.setCursor(17, 0);
   lcd.print(String(p_min) + " ");
 
-  EEPROM.write(mcycleadd, mmin);
-  EEPROM.write(scycleadd, smin);
-  EEPROM.write(p_oadd, p_o);
-  EEPROM.write(p_minadd, p_min);
+  // EEPROM.write(mcycleadd, mmin);
+  // EEPROM.write(scycleadd, smin);
+  // EEPROM.write(p_oadd, p_o);
+  // EEPROM.write(p_minadd, p_min);
+  EEPROM.put(mcycleadd, mmin);  // Write the integer to the first four slots
+  EEPROM.put(scycleadd, smin);  // Write the integer to the first four slots
+  EEPROM.put(p_oadd, p_o);      // Write the integer to the first four slots
+  EEPROM.put(p_minadd, p_min);  // Write the integer to the first four slots
 
   // Store the reset counter values in EEPROM
 
@@ -270,8 +274,10 @@ void setup() {
       EEPROM.write(rtcHourAddress, hr);
       EEPROM.write(rtcMinuteAddress, min1);
       EEPROM.write(rtcSecondAddress, sec);
-      EEPROM.write(p_oadd, p_o);
-      EEPROM.write(p_minadd, p_min);
+      // EEPROM.write(p_oadd, p_o);
+      // EEPROM.write(p_minadd, p_min);
+      EEPROM.put(p_oadd, p_o);      // Write the integer to the first four slots
+      EEPROM.put(p_minadd, p_min);  // Write the integer to the first four slots
       EEPROM.commit();
     } else {
       request->send(400, "text/plain", "invalid action");
@@ -339,16 +345,26 @@ void setup() {
   lcd.setCursor(3, 3);
   lcd.print(myvar2);
 
-  p_on_timeval = EEPROM.read(Ttimead);
-  prod_timeval = EEPROM.read(PTadd);
-  n_prod_timeval = EEPROM.read(NPTadd);
-  cycleTimeval = EEPROM.read(Ctimeadd);
-  var1val = EEPROM.read(var1add);
-  counter1val = EEPROM.read(counter1add);
-  p_o = EEPROM.read(p_oadd);
-  p_min = EEPROM.read(p_minadd);
-  mmin = EEPROM.read(mcycleadd);
-  smin = EEPROM.read(scycleadd);
+  // p_on_timeval = EEPROM.read(Ttimead);
+  // prod_timeval = EEPROM.read(PTadd);
+  // n_prod_timeval = EEPROM.read(NPTadd);
+  // cycleTimeval = EEPROM.read(Ctimeadd);
+  // var1val = EEPROM.read(var1add);
+  // counter1val = EEPROM.read(counter1add);
+  // p_o = EEPROM.read(p_oadd);
+  // p_min = EEPROM.read(p_minadd);
+  // mmin = EEPROM.read(mcycleadd);
+  // smin = EEPROM.read(scycleadd);
+  EEPROM.get(Ttimead, p_on_timeval);     // Read the integer from EEPROM
+  EEPROM.get(PTadd, prod_timeval);       // Read the integer from EEPROM
+  EEPROM.get(NPTadd, n_prod_timeval);    // Read the integer from EEPROM
+  EEPROM.get(Ctimeadd, cycleTimeval);    // Read the integer from EEPROM
+  EEPROM.get(var1add, var1val);          // Read the integer from EEPROM
+  EEPROM.get(counter1add, counter1val);  // Read the integer from EEPROM
+  EEPROM.get(p_oadd, p_o);               // Read the integer from EEPROM
+  EEPROM.get(p_minadd, p_min);           // Read the integer from EEPROM
+  EEPROM.get(mcycleadd, mmin);           // Read the integer from EEPROM
+  EEPROM.get(scycleadd, smin);           // Read the integer from EEPROM
 
   if (counter1val <= 0) {
     counter1 = 0;
@@ -469,14 +485,22 @@ void loop()
     EEPROM.write(rtcMinuteAddress, min1);
     EEPROM.write(rtcSecondAddress, sec);
 
-    EEPROM.write(Ttimead, p_on_timeval);
-    EEPROM.write(PTadd, prod_timeval);
-    EEPROM.write(NPTadd, n_prod_timeval);
-    EEPROM.write(Ctimeadd, cycleTimeval);
-    EEPROM.write(var1add, var1val);
-    EEPROM.write(counter1add, counter1val);
-    EEPROM.write(p_oadd, p_o);
-    EEPROM.write(p_minadd, p_min);
+    // EEPROM.write(Ttimead, p_on_timeval);
+    // EEPROM.write(PTadd, prod_timeval);
+    // EEPROM.write(NPTadd, n_prod_timeval);
+    // EEPROM.write(Ctimeadd, cycleTimeval);
+    // EEPROM.write(var1add, var1val);
+    // EEPROM.write(counter1add, counter1val);
+    // EEPROM.write(p_oadd, p_o);
+    // EEPROM.write(p_minadd, p_min);
+    EEPROM.put(Ttimead, p_on_timeval);     // Write the integer to the first four slots
+    EEPROM.put(PTadd, prod_timeval);       // Write the integer to the first four slots
+    EEPROM.put(NPTadd, n_prod_timeval);    // Write the integer to the first four slots
+    EEPROM.put(Ctimeadd, cycleTimeval);    // Write the integer to the first four slots
+    EEPROM.put(var1add, var1val);          // Write the integer to the first four slots
+    EEPROM.put(counter1add, counter1val);  // Write the integer to the first four slots
+    EEPROM.put(p_oadd, p_o);               // Write the integer to the first four slots
+    EEPROM.put(p_minadd, p_min);           // Write the integer to the first four slots
 
     EEPROM.commit();
 
@@ -521,7 +545,8 @@ void loop()
       lcd.print("Maintenance ;)");
       lcd.setCursor(0, 1);
       lcd.print(String(mhr) + ":" + String(mmin) + ":" + String(mcycleTime % 60));
-      EEPROM.write(mcycleadd, mmin);
+      // EEPROM.write(mcycleadd, mmin);
+      EEPROM.put(mcycleadd, mmin);  // Write the integer to the first four slots
       lcd.setCursor(10, 0);
       lcd.print(emp);
       lcd.setCursor(10, 1);
@@ -573,7 +598,8 @@ void loop()
       lcd.setCursor(0, 1);
       lcd.print(String(shr) + ":" + String(smin) + ":" + String(scycleTime % 60));
       // EEPROM.write(scycleadd, scycleTime);
-      EEPROM.write(scycleadd, smin);
+      // EEPROM.write(scycleadd, smin);
+      EEPROM.put(scycleadd, smin);  // Write the integer to the first four slots
 
       lcd.setCursor(10, 0);
       lcd.print(emp);

@@ -1,0 +1,27 @@
+#include <EEPROM.h>
+#include <LiquidCrystal_I2C.h>
+
+LiquidCrystal_I2C lcd(0x27, 20, 4);  // Set the I2C address to 0x27 and dimensions to 20x4
+
+int readValue;
+
+void setup() {
+  EEPROM.begin(512);  // Initialize the EEPROM with the desired size
+  // Write a 4-byte integer to EEPROM (assuming you have enough slots)
+  int myValue = 123456;
+  EEPROM.put(0, myValue);  // Write the integer to the first four slots
+  EEPROM.commit();         // Commit the changes to EEPROM
+  lcd.begin(20, 4);
+  lcd.init();
+  lcd.backlight();
+}
+
+void loop() {
+
+  EEPROM.get(0, readValue);  // Read the integer from EEPROM
+  Serial.begin(115200);
+  Serial.println(readValue);  // Print the read value
+  lcd.setCursor(3, 3);
+  lcd.print(String(readValue));
+  delay(1000);
+}

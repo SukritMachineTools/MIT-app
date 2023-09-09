@@ -618,9 +618,10 @@ void loop()
     }
 
   } else {
-    lcd.setCursor(0, 0);
+    // lcd.setCursor(0, 0);
+    lcd.clear();
     srunning = false;
     mrunning = false;
-    lcd.print("Error :D");
+    // lcd.print("Error :D");
   }
 }
