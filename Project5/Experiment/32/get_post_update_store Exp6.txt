@@ -114,9 +114,9 @@ unsigned long resetcycleStartTime = 0;
 String myvar2;
 int getsec, getmin, gethr;
 unsigned long p_o = 0;
-int p_oadd = counter1add + sizeof(int);
+unsigned long p_oadd = counter1add + sizeof(unsigned long);
 unsigned long p_min = 0;
-int p_minadd = p_oadd + sizeof(int);
+unsigned long p_minadd = p_oadd + sizeof(unsigned long);
 
 //modes
 unsigned long mode = 0;
@@ -202,6 +202,8 @@ void resetparams() {
 
   EEPROM.write(mcycleadd, mmin);
   EEPROM.write(scycleadd, smin);
+  EEPROM.write(p_oadd, p_o);
+  EEPROM.write(p_minadd, p_min);
 
   // Store the reset counter values in EEPROM
 
@@ -344,7 +346,7 @@ void setup() {
   var1val = EEPROM.read(var1add);
   counter1val = EEPROM.read(counter1add);
   p_o = EEPROM.read(p_oadd);
-  p_min = EEPROM.read(p_min);
+  p_min = EEPROM.read(p_minadd);
   mmin = EEPROM.read(mcycleadd);
   smin = EEPROM.read(scycleadd);
 
