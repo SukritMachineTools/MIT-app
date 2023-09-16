@@ -261,10 +261,10 @@ void setup() {
       AsyncWebParameter* o = request->getParam(5);
       p_min = (o->value()).toInt();
       request->send(200, "text/plain", "time reset successful");
-      lcd.setCursor(12, 3);
+      // lcd.setCursor(12, 3);
 
       // lcd.print(String(gethr) + ":" + String(getmin) + ":" + String(getsec));
-      lcd.print(String(p_min));
+      // lcd.print(String(p_min));
 
       sec = getsec;
       min1 = getmin;
