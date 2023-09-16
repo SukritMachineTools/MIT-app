@@ -1,0 +1,33 @@
+function doGet(e) { 
+
+var ss = SpreadsheetApp.openByUrl("https://docs.google.com/spreadsheets/d/1U_3zp4xGZKFp8OVzgASWS2zrdtN7ZXU_Ig2GQH1tNZ4/edit#gid=0");
+var sheet = ss.getSheetByName("Sheet1");
+
+  addUser(e,sheet);
+}
+
+function doPost(e) { 
+  var ss = SpreadsheetApp.openByUrl("https://docs.google.com/spreadsheets/d/1U_3zp4xGZKFp8OVzgASWS2zrdtN7ZXU_Ig2GQH1tNZ4/edit#gid=0");
+  var sheet = ss.getSheetByName("Sheet1"); 
+  
+  addUser(e,sheet);
+}
+
+
+function addUser(e,sheet) {
+  var date = e.parameter.date ; 
+  var total_time = e.parameter.total_time ;
+  var production_time=e.parameter.production_time;
+  var nProd_time = e.parameter.nProd_time;
+  var clock_time= e.parameter.clock_time;
+  var part_count= e.parameter.part_count;
+  var var1=e.parameter.var1;
+  var real_time= e.parameter.real_time;
+  var power_off_no=e.parameter.power_off_no;
+  var power_off_time=e.parameter.power_off_time;
+  var maintenance_time=e.parameter.maintenance_time;
+  var setting_time=e.parameter.setting_time;
+  var current_mode=e.parameter.current_mode;
+
+  sheet.appendRow([date,total_time,production_time,nProd_time,clock_time,part_count,var1,real_time,power_off_no,power_off_time,maintenance_time,setting_time,current_mode]);
+}

@@ -1,0 +1,23 @@
+// Google Apps Script code
+function doPost(e) {
+  var ss = SpreadsheetApp.openByUrl("https://docs.google.com/spreadsheets/d/10-FoOt4Uv3i-8Li0kH9s2SYTv1ZF1VU5C2752gDE6-w/edit#gid=0");
+  var sheet = ss.getSheetByName("Sheet1");
+  var today = new Date();
+  var todayFormatted = String(Utilities.formatDate(today, "Asia/Kolkata", "yyyy-MM-dd"));
+  var lastRow = sheet.getLastRow();
+  var lastdate = String(Utilities.formatDate(sheet.getRange(lastRow, 1).getValue(), "Asia/Kolkata", "yyyy-MM-dd"));
+
+  // Check if the provided date matches today's date
+  if (lastdate ==e.parameter.date) {
+    // Update the last row with today's date
+    var lastRow = sheet.getLastRow();
+    sheet.getRange(lastRow, 1).setValue(e.parameter.date); // Assuming Date is in column A
+    sheet.getRange(lastRow, 2).setValue(e.parameter.registrationID); // Assuming Registration ID is in column B
+    sheet.getRange(lastRow, 3).setValue(e.parameter.name); // Assuming Name is in column C
+    return ContentService.createTextOutput("Data updated successfully.");
+  } else {
+    // Append a new row with the provided data
+    sheet.appendRow([e.parameter.date, e.parameter.registrationID, e.parameter.name,todayFormatted,lastRow,lastdate]);
+    return ContentService.createTextOutput("New row added successfully.");
+  }
+}
