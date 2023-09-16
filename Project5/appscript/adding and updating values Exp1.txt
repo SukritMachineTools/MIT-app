@@ -1,0 +1,59 @@
+function doGet(e) {
+
+  var ss = SpreadsheetApp.openByUrl("https://docs.google.com/spreadsheets/d/1U_3zp4xGZKFp8OVzgASWS2zrdtN7ZXU_Ig2GQH1tNZ4/edit#gid=0");
+  var sheet = ss.getSheetByName("Sheet1");
+
+  addUser(e, sheet);
+}
+
+function doPost(e) {
+  var ss = SpreadsheetApp.openByUrl("https://docs.google.com/spreadsheets/d/1U_3zp4xGZKFp8OVzgASWS2zrdtN7ZXU_Ig2GQH1tNZ4/edit#gid=0");
+  var sheet = ss.getSheetByName("Sheet1");
+
+  addUser(e, sheet);
+}
+
+
+function addUser(e, sheet) {
+  var lastRow = sheet.getLastRow();
+  var lastdate = String(Utilities.formatDate(sheet.getRange(lastRow, 1).getValue(), "Asia/Kolkata", "yyyy-MM-dd"));
+  //////
+  var date = e.parameter.date;
+  var total_time = e.parameter.total_time;
+  var production_time = e.parameter.production_time;
+  var nProd_time = e.parameter.nProd_time;
+  var clock_time = e.parameter.clock_time;
+  var part_count = e.parameter.part_count;
+  var var1 = e.parameter.var1;
+  var real_time = e.parameter.real_time;
+  var power_off_no = e.parameter.power_off_no;
+  var power_off_time = e.parameter.power_off_time;
+  var maintenance_time = e.parameter.maintenance_time;
+  var setting_time = e.parameter.setting_time;
+  var current_mode = e.parameter.current_mode;
+
+  // sheet.appendRow([date, total_time, production_time, nProd_time, clock_time, part_count, var1, real_time, power_off_no, power_off_time, maintenance_time, setting_time, current_mode]);
+
+  // Check if the provided date matches Last date
+  if (lastdate == e.parameter.date) {
+    sheet.getRange(lastRow, 1).setValue(date); // Assuming Date is in column A
+    sheet.getRange(lastRow, 2).setValue(total_time); // Assuming total_time is in column B
+    sheet.getRange(lastRow, 3).setValue(production_time);
+    sheet.getRange(lastRow, 4).setValue(nProd_time);
+    sheet.getRange(lastRow, 5).setValue(clock_time);
+    sheet.getRange(lastRow, 6).setValue(part_count);
+    sheet.getRange(lastRow, 7).setValue(var1);
+    sheet.getRange(lastRow, 8).setValue(real_time);
+    sheet.getRange(lastRow, 9).setValue(power_off_no);
+    sheet.getRange(lastRow, 10).setValue(power_off_time);
+    sheet.getRange(lastRow, 11).setValue(maintenance_time);
+    sheet.getRange(lastRow, 12).setValue(setting_time);
+    sheet.getRange(lastRow, 13).setValue(current_mode);
+    return ContentService.createTextOutput("Data updated successfully.");
+  } else {
+    // Append a new row with the provided data
+    sheet.appendRow([date, total_time, production_time, nProd_time, clock_time, part_count, var1, real_time, power_off_no, power_off_time, maintenance_time, setting_time, current_mode]);
+
+    return ContentService.createTextOutput("New row added successfully.");
+  }
+}
