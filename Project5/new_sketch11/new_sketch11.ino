@@ -29,7 +29,7 @@ int optoPinm1 = 27;
 int optoPinm2 = 18;
 int optoPinm3 = 26;
 int optoPinm4 = 14;
-int optoPinm5 = 25;                                                                                              
+int optoPinm5 = 25;
 // int button1Pin = 18; // Button 1 pin
 
 // int prod_ButtonPin = 26;  // Button 2 pin
@@ -129,17 +129,22 @@ int pflag = 0, mflag = 0, sflag = 1;
 static unsigned long mTime = 0, pTime = 0, sTime = 0;
 static bool srunning = false, mrunning = false;
 int mhr = 0, mmin = 0, shr = 0, smin = 0;
+String getssid, getpassword;
+unsigned long ssidadd = scycleadd + sizeof(unsigned long);
+unsigned long passwordadd = ssidadd + sizeof(unsigned long);
 
 String emp = "     ";
 
 AsyncWebServer server(80);
 
+//
+//const char* ssid = "DeviceL1";
+//
+//const char* password = "";
 
-const char* ssid = "DeviceL1";
+String ssid = "DeviceL1";
 
-const char* password = "";
-
-
+String password = "";
 
 void notFound(AsyncWebServerRequest* request) {
   request->send(404, "text/plain", "Not found");
@@ -228,6 +233,11 @@ void setup() {
   pinMode(optoPinm5, INPUT);
 
 
+  ssid = String(EEPROM.read(ssidadd));
+  password = String(EEPROM.read(passwordadd));
+  IPAddress staticIP(192, 168, 1, 10); // Change this to your desired static IP address
+  IPAddress gateway(192, 168, 1, 1);  // Change this to your network gateway IP
+  IPAddress subnet(255, 255, 255, 0); // Change this to your network subnet mask
 
   WiFi.mode(WIFI_AP);
 
@@ -239,12 +249,17 @@ void setup() {
 
   Serial.println(ip);
 
-  server.on("/", HTTP_GET, [](AsyncWebServerRequest* request) {
+  server.on("/", HTTP_GET, [](AsyncWebServerRequest * request) {
     String message = (String(p_on_time) + ", " + String(prod_time) + ", " + String(n_prod_time) + "," + String(cycleTime) + "," + String(counter1) + "," + String(var1) + "," + String(rtc.getHour()) + ":" + String(rtc.getMinute()) + ":" + String(rtc.getSecond()) + "," + String(p_o) + "," + String(p_min) + "," + String(mmin) + "," + String(smin) + "," + String(mode));
     request->send(200, "text/plain", message);
   });
 
-  server.on("/post", HTTP_POST, [](AsyncWebServerRequest* request) {
+  server.on("/id", HTTP_GET, [](AsyncWebServerRequest * request) {
+    String message = (String(ssid));
+    request->send(200, "text/plain", message);
+  });
+
+  server.on("/post", HTTP_POST, [](AsyncWebServerRequest * request) {
     AsyncWebParameter* j = request->getParam(0);
     String postBody = j->value();
 
@@ -266,6 +281,7 @@ void setup() {
       // lcd.print(String(gethr) + ":" + String(getmin) + ":" + String(getsec));
       // lcd.print(String(p_min));
 
+
       sec = getsec;
       min1 = getmin;
       hr = gethr;
@@ -278,6 +294,8 @@ void setup() {
       // EEPROM.write(p_minadd, p_min);
       EEPROM.put(p_oadd, p_o);      // Write the integer to the first four slots
       EEPROM.put(p_minadd, p_min);  // Write the integer to the first four slots
+      EEPROM.put(ssidadd, ssid);
+      EEPROM.put(passwordadd, password);
       EEPROM.commit();
     } else {
       request->send(400, "text/plain", "invalid action");
@@ -286,8 +304,22 @@ void setup() {
     request->send(200);
   });
 
-
-
+  server.on("/pswd", HTTP_POST, [](AsyncWebServerRequest * request) {
+    AsyncWebParameter* j = request->getParam(0);
+    String postBody = j->value();
+    if (postBody == "resetpswd") {
+      AsyncWebParameter* k = request->getParam(1);
+      getssid = (k->value());
+      AsyncWebParameter* l = request->getParam(2);
+      getpassword = (l->value());
+      EEPROM.put(ssidadd, ssid);
+      EEPROM.put(passwordadd, password);
+      request->send(200, "text/plain", "time reset successful");
+    }
+    else {
+      request->send(400, "text/plain", "invalid action");
+    }
+  });
 
   server.onNotFound(notFound);
   server.begin();
@@ -363,8 +395,8 @@ void setup() {
   EEPROM.get(counter1add, counter1val);  // Read the integer from EEPROM
   EEPROM.get(p_oadd, p_o);               // Read the integer from EEPROM
   EEPROM.get(p_minadd, p_min);           // Read the integer from EEPROM
-  EEPROM.get(mcycleadd, mmin);           // Read the integer from EEPROM
-  EEPROM.get(scycleadd, smin);           // Read the integer from EEPROM
+  //  EEPROM.get(mcycleadd, mmin);           // Read the integer from EEPROM
+  //  EEPROM.get(scycleadd, smin);           // Read the integer from EEPROM
 
   if (counter1val <= 0) {
     counter1 = 0;
@@ -406,6 +438,8 @@ void loop()
 
     lcd.print("C.T.:" + String(cycleTime));
     lcd.setCursor(10, 1);
+
+
 
     lcd.print("PRT1:" + String(counter1));
 
@@ -501,6 +535,8 @@ void loop()
     EEPROM.put(counter1add, counter1val);  // Write the integer to the first four slots
     EEPROM.put(p_oadd, p_o);               // Write the integer to the first four slots
     EEPROM.put(p_minadd, p_min);           // Write the integer to the first four slots
+    //    EEPROM.put(ssidadd, ssid);
+    //    EEPROM.put(passwordadd, password);
 
     EEPROM.commit();
 
