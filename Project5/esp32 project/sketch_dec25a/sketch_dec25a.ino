@@ -107,6 +107,10 @@ unsigned long NMaskadd = GIpadd + sizeof(unsigned long);
 unsigned long ssidadd = NMaskadd + sizeof(unsigned long);
 unsigned long passwordadd = ssidadd + sizeof(unsigned long);
 unsigned long epipadd = passwordadd + sizeof(unsigned long);
+
+
+const int relay2 = 19;  //relay2
+const int relay1 = 23;  //relay1
 ////////////////////////////////////////////////////////////////////////////////////////////////
 String emp = "     ";
 AsyncWebServer server(80);
@@ -209,9 +213,13 @@ void setup() {
   if (epip == 1) {
     EEPROM.get(ssidadd, ssid);
     EEPROM.get(passwordadd, password);
-    EEPROM.get(Ipadd, Ip);
-    EEPROM.get(GIpadd, GIp);
-    EEPROM.get(NMaskadd, NMask);
+    String ip1, ip2, ip3;
+    EEPROM.get(Ipadd, ip1);
+    Ip.fromString(ip1);
+    EEPROM.get(GIpadd, ip2);
+    GIp.fromString(ip2);
+    EEPROM.get(NMaskadd, ip3);
+    NMask.fromString(ip3);
   }
   WiFi.softAP(ssid, password);
   delay(100);
@@ -248,10 +256,6 @@ void setup() {
       AsyncWebParameter* o = request->getParam(5);
       p_min = (o->value()).toInt();
       request->send(200, "text/plain", "time reset successful");
-      // lcd.setCursor(12, 3);
-
-      // lcd.print(String(gethr) + ":" + String(getmin) + ":" + String(getsec));
-      // lcd.print(String(p_min));
 
       sec = getsec;
       min1 = getmin;
@@ -291,14 +295,21 @@ void setup() {
       newnmask.fromString(new_nmask->value());
       request->send(200, "text/plain", "time reset successful");
 
-      EEPROM.put(ssidadd, newssid);
-      EEPROM.put(passwordadd, newpassword);
-      EEPROM.put(Ipadd, newip);
-      EEPROM.put(GIpadd, newgip);
-      EEPROM.put(NMaskadd, newnmask);
-      epip=1;
+      EEPROM.put(ssidadd, String(newssid));
+      EEPROM.put(passwordadd, String(newpassword));
+      EEPROM.put(Ipadd, String(newip));
+      EEPROM.put(GIpadd, String(newgip));
+      EEPROM.put(NMaskadd, String(newnmask));
+      epip = 1;
       EEPROM.put(epipadd, epip);
       EEPROM.commit();
+      if (epip == 1) {
+        WiFi.softAP(newssid, newpassword);
+        delay(100);
+        WiFi.softAPConfig(newip, newgip, newnmask);
+
+        ip = WiFi.softAPIP();
+      }
     } else {
       request->send(400, "text/plain", "invalid action");
     }
@@ -395,12 +406,14 @@ void setup() {
   } else {
     cycleTime = cycleTimeval - 2;
   }
+  pinMode(relay2, OUTPUT);  //relay2
 }
 //////////////////////////////////////////////////////////////////////////////////////////////
 void loop()
 
 {
   if (digitalRead(optoPinm1) == LOW) {
+    digitalWrite(relay2, HIGH);  //relay2
     mode = 2;
     mrunning = false;
     srunning = false;
@@ -520,6 +533,7 @@ void loop()
     }
   }  //mode1
   else if (digitalRead(optoPinm2) == LOW) {
+    digitalWrite(relay2, HIGH);  //relay2
     //Maintence mode
     storedHour = int(EEPROM.read(rtcHourAddress));
     storedMinute = int(EEPROM.read(rtcMinuteAddress));
@@ -572,6 +586,7 @@ void loop()
 
 
   } else if (digitalRead(optoPinm3) == LOW) {
+    digitalWrite(relay2, HIGH);  //relay2
     //setting mode
     storedHour = int(EEPROM.read(rtcHourAddress));
     storedMinute = int(EEPROM.read(rtcMinuteAddress));
@@ -633,7 +648,7 @@ void loop()
       // IPAddress Ip(192, 168, 4, 10);
       // IPAddress GIp(192, 168, 4, 1);
       // IPAddress NMask(255, 255, 255, 0);
-      WiFi.softAPConfig(Ip, GIp, NMask);
+      WiFi.config(Ip, GIp, NMask);
 
       ip = WiFi.softAPIP();
     }

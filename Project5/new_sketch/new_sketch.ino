@@ -1,3 +1,4 @@
+//libs
 #include <Wire.h>
 #include <WiFi.h>
 #include <AsyncTCP.h>
@@ -6,90 +7,53 @@
 #include <EEPROM.h>
 #include <RTClib.h>
 #include <ESP32Time.h>
-
-ESP32Time rtc(3600);  // offset in seconds GMT+1
-
-
-
+////////////////////////////////////////////////////
+ESP32Time rtc(3600);                 // offset in seconds GMT+1
 LiquidCrystal_I2C lcd(0x27, 20, 4);  // Set the I2C address to 0x27 and dimensions to 20x4
 
-
-
+//////////////////////////////////////////////////////////////////////////
+//variables
 int counter1 = 0;  // Counter controlled by Button 1
-
 int t_Start = 0;
-
 int t_stop = 0;
-
 int optoPin2 = 13;
-
 int optoPinrst = 33;
 // int optoPinm1 = 18;
 int optoPinm1 = 27;
 int optoPinm2 = 18;
 int optoPinm3 = 26;
 int optoPinm4 = 14;
-int optoPinm5 = 25;                                                                                              
-// int button1Pin = 18; // Button 1 pin
-
-// int prod_ButtonPin = 26;  // Button 2 pin
-
-// int resetButtonPin = 13; // Reset button pin
-
-// int ledPin = 4; // LED pin
-
-
-
-//int button1State = LOW;
+int optoPinm5 = 25;
 
 int optoPin2State = LOW;
-
-//int lastButton1State = LOW;
-
 int lastoptoPin2State = LOW;
-
 int optoPinm1State = LOW;
 
 
-
-// int p_b_state = LOW;
-
-// int p_b_laststate = LOW;
-
 unsigned long lastDebounceTime1 = 0;
-
 unsigned long debounceDelay = 50;
-
 unsigned long p_on_time = 0;
-
 unsigned long prod_time = 0;
-
 unsigned long n_prod_time = 0;
-
 unsigned long eff_time = 0;
-
 unsigned long var1 = 0;
-
 unsigned long var2 = 0;
 
+////////////////////////////////////////////////////////////////////////////////
+//address
 
-
-int counter1Address = 0;  // Address in the EEPROM emulation to store the counter1 value
-
+int counter1Address = 0;                  // Address in the EEPROM emulation to store the counter1 value
 int cycleTimeAddress = sizeof(counter1);  // Address in the EEPROM emulation to store the cycle time value
 
-
-
 unsigned long cycleStartTime = 0;  // To store the time when the button is pressed
-
-unsigned long cycleTime = 0;  // To store the calculated cycle time
-
+unsigned long cycleTime = 0;       // To store the calculated cycle time
+//--------------------------------------------------------------------------------------------------------------
 //*by me
 unsigned long newVar2 = 0;
 // unsigned long var2 = 0;
 unsigned long lastVar2Update = 0;
 unsigned long var2UpdateInterval = 1000;
-
+//------------------------------------------------------------------------------------------------------------
 //my variables
 String currentRtcTime;
 int rtaddress = 10;
@@ -117,7 +81,7 @@ unsigned long p_o = 0;
 unsigned long p_oadd = counter1add + sizeof(unsigned long);
 unsigned long p_min = 0;
 unsigned long p_minadd = p_oadd + sizeof(unsigned long);
-
+//------------------------------------------------------------------------------------------------------
 //modes
 unsigned long mode = 0;
 int mtime = 0, setime = 0;
@@ -129,22 +93,33 @@ int pflag = 0, mflag = 0, sflag = 1;
 static unsigned long mTime = 0, pTime = 0, sTime = 0;
 static bool srunning = false, mrunning = false;
 int mhr = 0, mmin = 0, shr = 0, smin = 0;
-
-String emp = "     ";
-
-AsyncWebServer server(80);
-
-
+//--------------------------------------------------------------------------------------------------
+IPAddress newip, newgip, newnmask;
+int epip = 0;
 const char* ssid = "DeviceL1";
-
 const char* password = "";
+IPAddress Ip(192, 168, 4, 10);
+IPAddress GIp(192, 168, 4, 1);
+IPAddress NMask(255, 255, 255, 0);
+unsigned long Ipadd = scycleadd + sizeof(unsigned long);
+unsigned long GIpadd = Ipadd + sizeof(unsigned long);
+unsigned long NMaskadd = GIpadd + sizeof(unsigned long);
+unsigned long ssidadd = NMaskadd + sizeof(unsigned long);
+unsigned long passwordadd = ssidadd + sizeof(unsigned long);
+unsigned long epipadd = passwordadd + sizeof(unsigned long);
+////////////////////////////////////////////////////////////////////////////////////////////////
+String emp = "     ";
+AsyncWebServer server(80);
+// const char* ssid = "DeviceL1";
+// const char* password = "";
+IPAddress ip;
 
 
-
+/////////////////////////////////////////////////////////////////////////////////////////////////
 void notFound(AsyncWebServerRequest* request) {
   request->send(404, "text/plain", "Not found");
 }
-/////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////
 void resettime() {
   //code
 }
@@ -230,10 +205,22 @@ void setup() {
 
 
   WiFi.mode(WIFI_AP);
-
+  EEPROM.get(epipadd, epip);
+  if (epip == 1) {
+    EEPROM.get(ssidadd, ssid);
+    EEPROM.get(passwordadd, password);
+    EEPROM.get(Ipadd, Ip);
+    EEPROM.get(GIpadd, GIp);
+    EEPROM.get(NMaskadd, NMask);
+  }
   WiFi.softAP(ssid, password);
+  delay(100);
+  // IPAddress Ip(192, 168, 4, 10);
+  // IPAddress GIp(192, 168, 4, 1);
+  // IPAddress NMask(255, 255, 255, 0);
+  WiFi.softAPConfig(Ip, GIp, NMask);
 
-  IPAddress ip = WiFi.softAPIP();
+  ip = WiFi.softAPIP();
 
   Serial.print("AP IP address: ");
 
@@ -285,105 +272,140 @@ void setup() {
 
     request->send(200);
   });
+  //-----------------------------------------------------------------------------------------------------
+  server.on("/admin", HTTP_POST, [](AsyncWebServerRequest* request) {
+    AsyncWebParameter* action = request->getParam(0);
+    String postBody = action->value();
+
+    if (postBody == "reset_admin") {
+      AsyncWebParameter* new_ssid = request->getParam(1);
+      String newssid = (new_ssid->value());
+      AsyncWebParameter* new_password = request->getParam(2);
+      String newpassword = (new_password->value());
+      AsyncWebParameter* new_ip = request->getParam(3);
+      newip.fromString(new_ip->value());
+
+      AsyncWebParameter* new_gip = request->getParam(4);
+      newgip.fromString(new_gip->value());
+      AsyncWebParameter* new_nmask = request->getParam(5);
+      newnmask.fromString(new_nmask->value());
+      request->send(200, "text/plain", "time reset successful");
+
+      EEPROM.put(ssidadd, newssid);
+      EEPROM.put(passwordadd, newpassword);
+      EEPROM.put(Ipadd, newip);
+      EEPROM.put(GIpadd, newgip);
+      EEPROM.put(NMaskadd, newnmask);
+      epip = 1;
+      EEPROM.put(epipadd, epip);
+      EEPROM.commit();
+      // if (epip == 1) {
+      //   WiFi.softAP(newssid, newpassword);
+      //   delay(100);
+      //   // IPAddress Ip(192, 168, 4, 10);
+      //   // IPAddress GIp(192, 168, 4, 1);
+      //   // IPAddress NMask(255, 255, 255, 0);
+      //   WiFi.softAPConfig(newip, newgip, newnmask);
+
+      //   ip = WiFi.softAPIP();
+      // }
+    }
+     else {
+    request->send(400, "text/plain", "invalid action");
+    }
+
+    request->send(200);
+});
 
 
 
 
-  server.onNotFound(notFound);
-  server.begin();
+server.onNotFound(notFound);
+server.begin();
 
 
-  Serial.println("Server started");
+Serial.println("Server started");
 
-  lcd.begin(20, 4);
-  lcd.init();
-  lcd.backlight();
-
-
-  rtc.setTime(0, 0, 23, 12, 6, 2023);
-
-  // EEPROM.begin(sizeof(counter1) + sizeof(cycleTime));  // Initialize EEPROM with the desired data size
-  EEPROM.begin(512);
-
-  // Read the counter and cycle time values from EEPROM during initialization
-
-  EEPROM.get(counter1Address, counter1);
-
-  EEPROM.get(cycleTimeAddress, cycleTime);
+lcd.begin(20, 4);
+lcd.init();
+lcd.backlight();
 
 
+rtc.setTime(0, 0, 23, 12, 6, 2023);
 
-  if (counter1 < 0 || counter1 > 9999) {
+// EEPROM.begin(sizeof(counter1) + sizeof(cycleTime));  // Initialize EEPROM with the desired data size
+EEPROM.begin(512);
 
-    // Invalid counter1 value stored in EEPROM, reset to zero
+// Read the counter and cycle time values from EEPROM during initialization
 
-    counter1 = 0;
-  }
+EEPROM.get(counter1Address, counter1);
 
-  //pinMode(button1Pin, INPUT_PULLUP);
-
-  pinMode(optoPin2, INPUT_PULLUP);
+EEPROM.get(cycleTimeAddress, cycleTime);
 
 
 
-  //pinMode(resetButtonPin, INPUT_PULLUP);
+if (counter1 < 0 || counter1 > 9999) {
+  // Invalid counter1 value stored in EEPROM, reset to zero
 
-  pinMode(optoPinrst, INPUT_PULLUP);
-  pinMode(optoPinm1, INPUT_PULLUP);
-  pinMode(optoPinm2, INPUT_PULLUP);
-  pinMode(optoPinm3, INPUT_PULLUP);
-  pinMode(optoPinm4, INPUT_PULLUP);
-  pinMode(optoPinm5, INPUT_PULLUP);
+  counter1 = 0;
+}
 
-  //pinMode(ledPin, OUTPUT);
+//pinMode(button1Pin, INPUT_PULLUP);
 
-  storedHour = int(EEPROM.read(rtcHourAddress));
-  storedMinute = int(EEPROM.read(rtcMinuteAddress));
-  storedSecond = int(EEPROM.read(rtcSecondAddress));
-  rtc.setTime(storedSecond, storedMinute, storedHour - 1, 12, 6, 2023);
-  myvar2 = String(storedHour) + ":" + String(storedMinute) + ":" + String(storedSecond);
-  lcd.setCursor(3, 3);
-  lcd.print(myvar2);
+pinMode(optoPin2, INPUT_PULLUP);
 
-  // p_on_timeval = EEPROM.read(Ttimead);
-  // prod_timeval = EEPROM.read(PTadd);
-  // n_prod_timeval = EEPROM.read(NPTadd);
-  // cycleTimeval = EEPROM.read(Ctimeadd);
-  // var1val = EEPROM.read(var1add);
-  // counter1val = EEPROM.read(counter1add);
-  // p_o = EEPROM.read(p_oadd);
-  // p_min = EEPROM.read(p_minadd);
-  // mmin = EEPROM.read(mcycleadd);
-  // smin = EEPROM.read(scycleadd);
-  EEPROM.get(Ttimead, p_on_timeval);     // Read the integer from EEPROM
-  EEPROM.get(PTadd, prod_timeval);       // Read the integer from EEPROM
-  EEPROM.get(NPTadd, n_prod_timeval);    // Read the integer from EEPROM
-  EEPROM.get(Ctimeadd, cycleTimeval);    // Read the integer from EEPROM
-  EEPROM.get(var1add, var1val);          // Read the integer from EEPROM
-  EEPROM.get(counter1add, counter1val);  // Read the integer from EEPROM
-  EEPROM.get(p_oadd, p_o);               // Read the integer from EEPROM
-  EEPROM.get(p_minadd, p_min);           // Read the integer from EEPROM
-  EEPROM.get(mcycleadd, mmin);           // Read the integer from EEPROM
-  EEPROM.get(scycleadd, smin);           // Read the integer from EEPROM
 
-  if (counter1val <= 0) {
-    counter1 = 0;
-    counter1val = 0;
-  } else {
-    counter1 = counter1val - 1;
-  }
-  if (var1val <= 0) {
-    var1 = 0;
-    var1val = 0;
-  } else {
-    var1 = var1val - 2;
-  }
-  if (cycleTimeval <= 0) {
-    cycleTime = 0;
-    cycleTimeval = 0;
-  } else {
-    cycleTime = cycleTimeval - 2;
-  }
+
+//pinMode(resetButtonPin, INPUT_PULLUP);
+
+pinMode(optoPinrst, INPUT_PULLUP);
+pinMode(optoPinm1, INPUT_PULLUP);
+pinMode(optoPinm2, INPUT_PULLUP);
+pinMode(optoPinm3, INPUT_PULLUP);
+pinMode(optoPinm4, INPUT_PULLUP);
+pinMode(optoPinm5, INPUT_PULLUP);
+
+//pinMode(ledPin, OUTPUT);
+
+storedHour = int(EEPROM.read(rtcHourAddress));
+storedMinute = int(EEPROM.read(rtcMinuteAddress));
+storedSecond = int(EEPROM.read(rtcSecondAddress));
+rtc.setTime(storedSecond, storedMinute, storedHour - 1, 12, 6, 2023);
+myvar2 = String(storedHour) + ":" + String(storedMinute) + ":" + String(storedSecond);
+lcd.setCursor(3, 3);
+lcd.print(myvar2);
+
+// p_on_timeval = EEPROM.read(Ttimead);
+
+EEPROM.get(Ttimead, p_on_timeval);     // Read the integer from EEPROM
+EEPROM.get(PTadd, prod_timeval);       // Read the integer from EEPROM
+EEPROM.get(NPTadd, n_prod_timeval);    // Read the integer from EEPROM
+EEPROM.get(Ctimeadd, cycleTimeval);    // Read the integer from EEPROM
+EEPROM.get(var1add, var1val);          // Read the integer from EEPROM
+EEPROM.get(counter1add, counter1val);  // Read the integer from EEPROM
+EEPROM.get(p_oadd, p_o);               // Read the integer from EEPROM
+EEPROM.get(p_minadd, p_min);           // Read the integer from EEPROM
+EEPROM.get(mcycleadd, mmin);           // Read the integer from EEPROM
+EEPROM.get(scycleadd, smin);           // Read the integer from EEPROM
+
+if (counter1val <= 0) {
+  counter1 = 0;
+  counter1val = 0;
+} else {
+  counter1 = counter1val - 1;
+}
+if (var1val <= 0) {
+  var1 = 0;
+  var1val = 0;
+} else {
+  var1 = var1val - 2;
+}
+if (cycleTimeval <= 0) {
+  cycleTime = 0;
+  cycleTimeval = 0;
+} else {
+  cycleTime = cycleTimeval - 2;
+}
 }
 //////////////////////////////////////////////////////////////////////////////////////////////
 void loop()
@@ -486,13 +508,7 @@ void loop()
     EEPROM.write(rtcSecondAddress, sec);
 
     // EEPROM.write(Ttimead, p_on_timeval);
-    // EEPROM.write(PTadd, prod_timeval);
-    // EEPROM.write(NPTadd, n_prod_timeval);
-    // EEPROM.write(Ctimeadd, cycleTimeval);
-    // EEPROM.write(var1add, var1val);
-    // EEPROM.write(counter1add, counter1val);
-    // EEPROM.write(p_oadd, p_o);
-    // EEPROM.write(p_minadd, p_min);
+
     EEPROM.put(Ttimead, p_on_timeval);     // Write the integer to the first four slots
     EEPROM.put(PTadd, prod_timeval);       // Write the integer to the first four slots
     EEPROM.put(NPTadd, n_prod_timeval);    // Write the integer to the first four slots
@@ -615,8 +631,31 @@ void loop()
       lcd.print(emp);
       // lcd.setCursor(0, 3);
       // lcd.print(emp);
+      //-----------------------------------------------
+      if (epip == 1) {
+        EEPROM.get(ssidadd, ssid);
+        EEPROM.get(passwordadd, password);
+        EEPROM.get(Ipadd, Ip);
+        EEPROM.get(GIpadd, GIp);
+        EEPROM.get(NMaskadd, NMask);
+      }
+      WiFi.softAP(ssid, password);
+      delay(100);
+      // IPAddress Ip(192, 168, 4, 10);
+      // IPAddress GIp(192, 168, 4, 1);
+      // IPAddress NMask(255, 255, 255, 0);
+      WiFi.softAPConfig(Ip, GIp, NMask);
+
+      ip = WiFi.softAPIP();
     }
 
+  } else if (digitalRead(optoPinm4) == LOW) {
+    lcd.setCursor(2, 0);
+    lcd.print(ip);
+    lcd.setCursor(2, 1);
+    lcd.print(WiFi.gatewayIP());
+    lcd.setCursor(2, 2);
+    lcd.print(WiFi.subnetMask());
   } else {
     // lcd.setCursor(0, 0);
     lcd.clear();
