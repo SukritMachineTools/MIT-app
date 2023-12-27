@@ -107,7 +107,7 @@ unsigned long NMaskadd = GIpadd + sizeof(unsigned long);
 unsigned long ssidadd = NMaskadd + sizeof(unsigned long);
 unsigned long passwordadd = ssidadd + sizeof(unsigned long);
 unsigned long epipadd = passwordadd + sizeof(unsigned long);
-
+ 
 
 const int relay2 = 19;  //relay2
 const int relay1 = 23;  //relay1
@@ -406,14 +406,14 @@ void setup() {
   } else {
     cycleTime = cycleTimeval - 2;
   }
-  pinMode(relay2, OUTPUT);  //relay2
+  //pinMode(relay2, OUTPUT);  //relay2
 }
 //////////////////////////////////////////////////////////////////////////////////////////////
 void loop()
 
 {
   if (digitalRead(optoPinm1) == LOW) {
-    digitalWrite(relay2, HIGH);  //relay2
+    //digitalWrite(relay2, HIGH);  //relay2
     mode = 2;
     mrunning = false;
     srunning = false;
@@ -533,7 +533,7 @@ void loop()
     }
   }  //mode1
   else if (digitalRead(optoPinm2) == LOW) {
-    digitalWrite(relay2, HIGH);  //relay2
+    //digitalWrite(relay2, HIGH);  //relay2
     //Maintence mode
     storedHour = int(EEPROM.read(rtcHourAddress));
     storedMinute = int(EEPROM.read(rtcMinuteAddress));
@@ -586,7 +586,7 @@ void loop()
 
 
   } else if (digitalRead(optoPinm3) == LOW) {
-    digitalWrite(relay2, HIGH);  //relay2
+    //digitalWrite(relay2, HIGH);  //relay2
     //setting mode
     storedHour = int(EEPROM.read(rtcHourAddress));
     storedMinute = int(EEPROM.read(rtcMinuteAddress));
